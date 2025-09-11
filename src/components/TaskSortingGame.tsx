@@ -558,9 +558,10 @@ export const TaskSortingGame = () => {
           )}
         </div>
       </div>
-
+      {/* Toolbox and Trash Bin */}
+          <div className='absolute bottom-8 flex justify-center bg-red w-full gap-10'>
       {/* Toolbox */}
-      <div ref={toolboxRef} className="absolute bottom-8 left-8">
+      <div ref={toolboxRef} className=" left-72">
         <div 
           onClick={handleKeep}
           className="clickable-area w-32 h-32 bg-forest border-forest-light flex flex-col items-center justify-center
@@ -572,7 +573,7 @@ export const TaskSortingGame = () => {
       </div>
 
       {/* Trash Bin */}
-      <div ref={trashRef} className="absolute bottom-8 right-8">
+      <div ref={trashRef} className=" right-72">
         <div 
           onClick={handleToss}
           className="clickable-area w-32 h-32 bg-destructive border-destructive flex flex-col items-center justify-center
@@ -582,7 +583,7 @@ export const TaskSortingGame = () => {
           <span className="text-destructive-foreground font-bold text-sm">Toss</span>
         </div>
       </div>
-
+</div>
       {/* Animating Task */}
       {animatingTask && (
         <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40">
