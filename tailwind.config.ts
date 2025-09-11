@@ -57,6 +57,28 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Bear-themed custom colors
+        bear: {
+          brown: "hsl(var(--bear-brown))",
+          light: "hsl(var(--bear-light))",
+        },
+        honey: {
+          DEFAULT: "hsl(var(--honey))",
+          dark: "hsl(var(--honey-dark))",
+        },
+        forest: {
+          DEFAULT: "hsl(var(--forest))",
+          light: "hsl(var(--forest-light))",
+        },
+        wood: {
+          DEFAULT: "hsl(var(--wood))",
+          light: "hsl(var(--wood-light))",
+        },
+      },
+      backgroundImage: {
+        'gradient-honey': 'var(--gradient-honey)',
+        'gradient-forest': 'var(--gradient-forest)',
+        'gradient-wood': 'var(--gradient-wood)',
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -80,10 +102,40 @@ export default {
             height: "0",
           },
         },
+        "conveyor": {
+          "0%": {
+            transform: "translateX(100vw)",
+          },
+          "100%": {
+            transform: "translateX(-200px)",
+          },
+        },
+        "bounce-gentle": {
+          "0%, 100%": {
+            transform: "translateY(0)",
+          },
+          "50%": {
+            transform: "translateY(-10px)",
+          },
+        },
+        "wobble": {
+          "0%, 100%": {
+            transform: "rotate(0deg)",
+          },
+          "25%": {
+            transform: "rotate(-2deg)",
+          },
+          "75%": {
+            transform: "rotate(2deg)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "conveyor": "conveyor 8s linear infinite",
+        "bounce-gentle": "bounce-gentle 2s ease-in-out infinite",
+        "wobble": "wobble 3s ease-in-out infinite",
       },
     },
   },

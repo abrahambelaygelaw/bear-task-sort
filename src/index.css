@@ -8,35 +8,55 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Bear-themed color palette */
+    --background: 42 15% 96%;
+    --foreground: 25 20% 15%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 38 25% 92%;
+    --card-foreground: 25 20% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 38 25% 92%;
+    --popover-foreground: 25 20% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Warm brown primary */
+    --primary: 25 45% 35%;
+    --primary-foreground: 42 15% 96%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Honey secondary */
+    --secondary: 45 80% 75%;
+    --secondary-foreground: 25 20% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Forest muted */
+    --muted: 120 15% 85%;
+    --muted-foreground: 25 15% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Orange accent */
+    --accent: 30 90% 65%;
+    --accent-foreground: 25 20% 15%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 42 15% 96%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 42 20% 85%;
+    --input: 42 20% 88%;
+    --ring: 25 45% 35%;
 
-    --radius: 0.5rem;
+    /* Custom bear theme colors */
+    --bear-brown: 25 45% 35%;
+    --bear-light: 35 35% 65%;
+    --honey: 45 80% 75%;
+    --honey-dark: 42 70% 60%;
+    --forest: 120 25% 45%;
+    --forest-light: 120 20% 75%;
+    --wood: 30 25% 60%;
+    --wood-light: 35 30% 80%;
+
+    /* Gradients */
+    --gradient-honey: linear-gradient(135deg, hsl(var(--honey)), hsl(var(--honey-dark)));
+    --gradient-forest: linear-gradient(180deg, hsl(var(--forest-light)), hsl(var(--forest)));
+    --gradient-wood: linear-gradient(45deg, hsl(var(--wood-light)), hsl(var(--wood)));
+
+    --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
 
