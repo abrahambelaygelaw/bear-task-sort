@@ -564,7 +564,7 @@ export const TaskSortingGame = () => {
       <div ref={toolboxRef} className=" left-72">
         <div 
           onClick={handleKeep}
-          className="clickable-area w-32 h-32 bg-forest border-forest-light flex flex-col items-center justify-center
+          className="clickable-area w-32 h-32 bg-forest border-4 flex flex-col items-center justify-center
                      animate-bounce-gentle rounded-md cursor-pointer"
         >
           <Wrench className="w-8 h-8 text-primary-foreground mb-2" />
@@ -576,7 +576,7 @@ export const TaskSortingGame = () => {
       <div ref={trashRef} className=" right-72">
         <div 
           onClick={handleToss}
-          className="clickable-area w-32 h-32 bg-destructive border-destructive flex flex-col items-center justify-center
+          className="clickable-area w-32 h-32 bg-destructive border-4 flex flex-col items-center justify-center
                      animate-bounce-gentle rounded-md cursor-pointer"
         >
           <Trash2 className="w-8 h-8 text-destructive-foreground mb-2" />
