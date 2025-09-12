@@ -274,7 +274,7 @@ export const TaskSortingGame = () => {
         <div className="text-center max-w-md">
           <BearMascot score={0} isPlaying={false} isGenerating={false} />
           <h1 className="text-4xl font-bold text-primary-foreground mb-4">
-            🐻 Bear's Task Factory
+             Bear's Task Factory
           </h1>
           <p className="text-primary-foreground/80 mb-6">
             Help our friendly bear sort relevant tasks from the clutter! 
