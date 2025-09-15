@@ -12,6 +12,8 @@ import {
   Check,
   X,
   HelpCircle,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import bearMascot from "@/assets/bear-mascot.png";
 import {
@@ -21,20 +23,24 @@ import {
 import correctSound from "@/assets/sounds/correct.mp3";
 import wrongSound from "@/assets/sounds/wrong.mp3";
 import backgroundMusic from "@/assets/sounds/background-music.mp3";
+
 // Add sound effects
-const playCorrectSound = () => {
-  const audio = new Audio(correctSound) 
-  audio.play().catch((error) => console.log("Audio play failed",error));
+const playCorrectSound = (isMuted: boolean) => {
+  if (isMuted) return;
+  const audio = new Audio(correctSound);
+  audio.play().catch((error) => console.log("Audio play failed", error));
 };
 
-const playWrongSound = () => {
-  const audio = new Audio(wrongSound); 
+const playWrongSound = (isMuted: boolean) => {
+  if (isMuted) return;
+  const audio = new Audio(wrongSound);
   audio.play().catch(() => console.log("Audio play failed"));
 };
 
 const bgMusic = new Audio(backgroundMusic);
 bgMusic.loop = true;
-const playBackgroundMusic = () => {
+const playBackgroundMusic = (isMuted: boolean) => {
+  if (isMuted) return;
   bgMusic.play().catch(() => console.log("Background music play failed"));
 };
 const stopBackgroundMusic = () => {
@@ -71,10 +77,10 @@ const TaskCard = ({
   return (
     <Card
       className={`w-64 p-4 bg-card border-2 border-wood 
-                     shadow-lg transition-all duration-300
-                     bg-gradient-wood  ${
-                       isAnimating ? "animate-fly-to-" + animationTarget : ""
-                     }`}
+					shadow-lg transition-all duration-300
+					bg-gradient-wood  ${
+            isAnimating ? "animate-fly-to-" + animationTarget : ""
+          }`}
     >
       <div className="text-sm font-medium text-foreground mb-3">
         {task.text}
@@ -147,6 +153,7 @@ export const TaskSortingGame = () => {
     isCorrect: boolean;
     taskId: string;
   } | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
   const toolboxRef = useRef<HTMLDivElement>(null);
   const trashRef = useRef<HTMLDivElement>(null);
   const conveyorRef = useRef<HTMLDivElement>(null);
@@ -168,7 +175,7 @@ export const TaskSortingGame = () => {
         totalTasks: tasks.length,
       });
 
-      playBackgroundMusic()
+      playBackgroundMusic(isMuted);
       setCurrentTaskIndex(0);
     } catch (error) {
       console.error("Failed to generate tasks:", error);
@@ -199,11 +206,11 @@ export const TaskSortingGame = () => {
       }
       // Play sound effect
       if (isCorrect) {
-        playCorrectSound();
+        playCorrectSound(isMuted);
       } else {
-        playWrongSound();
+        playWrongSound(isMuted);
       }
-      
+
       // Show visual feedback
       setShowFeedback({ isCorrect, taskId });
 
@@ -222,7 +229,7 @@ export const TaskSortingGame = () => {
 
           const newScore = isCorrect
             ? prev.score + 10
-            : Math.max(0, prev.score - 5);
+            : prev.score
           const newCorrectSorts = isCorrect
             ? prev.correctSorts + 1
             : prev.correctSorts;
@@ -240,7 +247,7 @@ export const TaskSortingGame = () => {
         setCurrentTaskIndex((prev) => prev + 1);
       }, 500); // Match animation duration
     },
-    []
+    [isMuted]
   );
 
   const handleKeep = useCallback(() => {
@@ -265,7 +272,7 @@ export const TaskSortingGame = () => {
       setTimeout(() => {
         setGameState((prev) => ({ ...prev, phase: "results" }));
       }, 1000);
-      stopBackgroundMusic()
+      stopBackgroundMusic();
     }
   }, [currentTaskIndex, gameState.phase, gameState.tasks.length]);
 
@@ -282,6 +289,19 @@ export const TaskSortingGame = () => {
     setCurrentTaskIndex(0);
     setAnimatingTask(null);
     setShowFeedback(null);
+    stopBackgroundMusic();
+  };
+
+  const handleToggleMute = () => {
+    setIsMuted((prev) => {
+      const newMutedState = !prev;
+      if (newMutedState) {
+        stopBackgroundMusic();
+      } else if (gameState.phase === "playing") {
+        playBackgroundMusic(false);
+      }
+      return newMutedState;
+    });
   };
 
   const currentTask = gameState.tasks[currentTaskIndex];
@@ -308,7 +328,7 @@ export const TaskSortingGame = () => {
   100% {
     transform: translate(
       calc(var(--toolbox-x) - 50vw + 50%),
-            calc(var(--toolbox-y) - 50vh + 50%)
+              calc(var(--toolbox-y) - 50vh + 50%)
     );
     opacity: 0;
   }
@@ -322,7 +342,7 @@ export const TaskSortingGame = () => {
   100% {
     transform: translate(
       calc(var(--trash-x) - 50vw + 50%),
-            calc(var(--trash-y) - 50vh + 50%)
+              calc(var(--trash-y) - 50vh + 50%)
     );
     opacity: 0;
   }
@@ -378,6 +398,26 @@ export const TaskSortingGame = () => {
 
 .animate-shake {
   animation: shake 0.5s;
+}
+
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+  50% { box-shadow: 0 0 10px 10px rgba(34, 197, 94, 0.5); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 1s ease-in-out infinite;
+}
+
+@keyframes pulse-glow-incorrect {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  50% { box-shadow: 0 0 10px 10px rgba(239, 68, 68, 0.5); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.animate-pulse-glow-incorrect {
+  animation: pulse-glow-incorrect 1s ease-in-out infinite;
 }
 `;
     document.head.appendChild(style);
@@ -666,8 +706,20 @@ export const TaskSortingGame = () => {
         </Badge>
       </div>
 
-      {/* Help Button */}
-      <div className="absolute top-4 right-4 z-10">
+      {/* Help and Mute Buttons */}
+      <div className="absolute top-4 right-4 z-10 flex gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleToggleMute}
+          className="rounded-full bg-card/80 backdrop-blur-sm"
+        >
+          {isMuted ? (
+            <VolumeX className="w-4 h-4" />
+          ) : (
+            <Volume2 className="w-4 h-4" />
+          )}
+        </Button>
         <Button
           variant="outline"
           size="icon"
@@ -709,12 +761,13 @@ export const TaskSortingGame = () => {
           <div
             onClick={handleKeep}
             className={`clickable-area w-32 h-32 bg-forest border-4 flex flex-col items-center justify-center
-                       rounded-md cursor-pointer ${
-                         showFeedback?.isCorrect &&
-                         showFeedback.taskId === currentTask?.id
-                           ? "animate-pulse-glow"
-                           : ""
-                       }`}
+						rounded-md cursor-pointer ${
+              showFeedback &&
+              showFeedback.taskId === currentTask?.id &&
+              animatingTask?.target === "toolbox"
+                ? "animate-pulse-glow"
+                : ""
+            }`}
           >
             <Wrench className="w-8 h-8 text-primary-foreground mb-2" />
             <span className="text-primary-foreground font-bold text-sm">
@@ -728,12 +781,13 @@ export const TaskSortingGame = () => {
           <div
             onClick={handleToss}
             className={`clickable-area w-32 h-32 bg-destructive border-4 flex flex-col items-center justify-center
-                       rounded-md cursor-pointer ${
-                         showFeedback?.isCorrect === false &&
-                         showFeedback.taskId === currentTask?.id
-                           ? "animate-pulse-glow-incorrect"
-                           : ""
-                       }`}
+						rounded-md cursor-pointer ${
+              showFeedback &&
+              showFeedback.taskId === currentTask?.id &&
+              animatingTask?.target === "trash"
+                ? "animate-pulse-glow-incorrect"
+                : ""
+            }`}
           >
             <Trash2 className="w-8 h-8 text-destructive-foreground mb-2" />
             <span className="text-destructive-foreground font-bold text-sm">
