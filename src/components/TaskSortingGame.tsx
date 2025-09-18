@@ -246,7 +246,7 @@ const TourOverlay = ({
             {/* Show demo task for first step */}
             {tourState.step === 0 && (
               <div className="mb-4">
-                <div className="w-48 mx-auto">
+                <div className=" mx-auto">
                   <TaskCard task={{
                     id: "demo",
                     text: "Example task moving across screen",
