@@ -40,3 +40,9 @@
 .read-the-docs {
   color: #888;
 }
+
+.conveyor-belt {
+  touch-action: none; /* Disables all browser touch gestures */
+  -webkit-user-select: none; /* Disable text selection on iOS */
+  user-select: none; /* Disable text selection */
+}

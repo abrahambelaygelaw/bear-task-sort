@@ -15,7 +15,7 @@ const UseGenerateTasks = async (goal: string): Promise<Task[]> => {
 
   const prompt = `Given the user goal: "${goal}"
   
-  Generate exactly 5 highly relevant tasks and exactly 5 completely irrelevant tasks.
+  Generate exactly 5 highly relevant tasks and exactly 5 a mix of irrelevant tasks and some tasks that are related to the same work but distraction.
   
   Format your response as follows:
   Relevant: [task description]
@@ -29,7 +29,6 @@ const UseGenerateTasks = async (goal: string): Promise<Task[]> => {
   Irrelevant: [task description]
   Irrelevant: [task description]
   
-  Make sure the irrelevant tasks are completely unrelated to the user's goal.
   Make sure the tasks are not longer than 7 words each.`;
 
   try {

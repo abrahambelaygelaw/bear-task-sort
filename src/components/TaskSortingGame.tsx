@@ -14,6 +14,8 @@ import {
   HelpCircle,
   Volume2,
   VolumeX,
+  ArrowRight,
+  ArrowDown,
 } from "lucide-react";
 import bearMascot from "@/assets/bear-mascot.png";
 import {
@@ -57,14 +59,19 @@ interface Task {
 }
 
 interface GameState {
-  phase: "input" | "generating" | "playing" | "results" | "instructions";
+  phase: "input" | "generating" | "playing" | "results";
   goal: string;
   tasks: Task[];
   score: number;
   correctSorts: number;
   totalTasks: number;
 }
-
+interface TourState {
+  isActive: boolean;
+  step: number;
+  totalSteps: number;
+  hasStarted: boolean;
+}
 const TaskCard = ({
   task,
   isAnimating,
@@ -132,17 +139,164 @@ const BearMascot = ({
     </div>
   );
 };
+const TourOverlay = ({
+  tourState,
+  onNextStep,
+  onSkipTour,
+  toolboxRef,
+  trashRef,
+}: {
+  tourState: TourState;
+  onNextStep: () => void;
+  onSkipTour: () => void;
+  toolboxRef: React.RefObject<HTMLDivElement>;
+  trashRef: React.RefObject<HTMLDivElement>;
+}) => {
+  if (!tourState.isActive) return null;
 
+  const tourSteps = [
+    {
+      title: "Welcome to Bear's Task Factory! 🐻",
+      description: "Let me show you how to play! Tasks will move across the screen like this one below.",
+      highlight: null,
+      action: "Got it!",
+    },
+    {
+      title: "Keep Relevant Tasks",
+      description: "Tap the green toolbox to KEEP tasks that help achieve your goal. Try tapping it now!",
+      highlight: "toolbox",
+      action: "Tap the toolbox",
+    },
+    {
+      title: "Toss Irrelevant Tasks",
+      description: "Tap the red trash can to TOSS tasks that don't help your goal. Give it a try!",
+      highlight: "trash",
+      action: "Tap the trash can",
+    },
+    {
+      title: "You're Ready!",
+      description: "Great! Now you know how to play. Sort tasks quickly to earn points. Good luck! 🎯",
+      highlight: null,
+      action: "Start Playing!",
+    },
+  ];
+
+  const currentStep = tourSteps[tourState.step];
+  
+  const getHighlightPosition = () => {
+    if (currentStep.highlight === "toolbox" && toolboxRef.current) {
+      const rect = toolboxRef.current.getBoundingClientRect();
+      return {
+        top: rect.top - 10,
+        left: rect.left - 10,
+        width: rect.width + 20,
+        height: rect.height + 20,
+      };
+    }
+    if (currentStep.highlight === "trash" && trashRef.current) {
+      const rect = trashRef.current.getBoundingClientRect();
+      return {
+        top: rect.top - 10,
+        left: rect.left - 10,
+        width: rect.width + 20,
+        height: rect.height + 20,
+      };
+    }
+    return null;
+  };
+
+  const highlightPos = getHighlightPosition();
+
+  return (
+    <div className="fixed inset-0 z-50">
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/60" />
+      
+      {/* Highlight spotlight */}
+      {highlightPos && (
+        <div
+          className="absolute border-4 border-yellow-400 rounded-lg shadow-2xl animate-pulse"
+          style={{
+            top: highlightPos.top,
+            left: highlightPos.left,
+            width: highlightPos.width,
+            height: highlightPos.height,
+            boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.6)",
+          }}
+        />
+      )}
+
+      {/* Tour instruction card */}
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+        <Card className="p-6 max-w-md mx-4 bg-card shadow-2xl">
+          <div className="text-center">
+            <h3 className="text-xl font-bold mb-3 text-foreground">
+              {currentStep.title}
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              {currentStep.description}
+            </p>
+            
+            {currentStep.highlight && (
+              <div className="mb-4 flex justify-center">
+                <ArrowDown className="w-8 h-8 text-yellow-500 animate-bounce" />
+              </div>
+            )}
+
+            {/* Show demo task for first step */}
+            {tourState.step === 0 && (
+              <div className="mb-4">
+                <div className="w-48 mx-auto">
+                  <TaskCard task={{
+                    id: "demo",
+                    text: "Example task moving across screen",
+                    isRelevant: true,
+                    processed: false
+                  }} />
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={onSkipTour}
+                className="flex-1"
+              >
+                Skip Tour
+              </Button>
+              <Button
+                onClick={onNextStep}
+                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white"
+              >
+                {currentStep.action}
+              </Button>
+            </div>
+            
+            <div className="mt-4 text-xs text-muted-foreground">
+              Step {tourState.step + 1} of {tourState.totalSteps}
+            </div>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+};
 export const TaskSortingGame = () => {
   const [gameState, setGameState] = useState<GameState>({
-    phase: "instructions",
+    phase: "input",
     goal: "",
     tasks: [],
     score: 0,
     correctSorts: 0,
     totalTasks: 0,
   });
-
+  const [tourState, setTourState] = useState<TourState>({
+    isActive: false,
+    step: 0,
+    totalSteps: 4,
+    hasStarted: false,
+  });
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [goalInput, setGoalInput] = useState("");
   const [animatingTask, setAnimatingTask] = useState<{
@@ -154,6 +308,9 @@ export const TaskSortingGame = () => {
     taskId: string;
   } | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [showTour, setShowTour] = useState(true);
+  const [tourStep, setTourStep] = useState(0);
+  
   const toolboxRef = useRef<HTMLDivElement>(null);
   const trashRef = useRef<HTMLDivElement>(null);
   const conveyorRef = useRef<HTMLDivElement>(null);
@@ -174,27 +331,62 @@ export const TaskSortingGame = () => {
         correctSorts: 0,
         totalTasks: tasks.length,
       });
-
       playBackgroundMusic(isMuted);
+
       setCurrentTaskIndex(0);
+      
+      // Start tour for new players
+      if (!tourState.hasStarted) {
+        setTourState(prev => ({
+          ...prev,
+          isActive: true,
+          hasStarted: true,
+        }));
+      }
     } catch (error) {
       console.error("Failed to generate tasks:", error);
-      // Fallback to mock data
-      const tasks = UseGetFallbackTasks(goalInput);
-      setGameState({
-        phase: "playing",
-        goal: goalInput,
-        tasks,
-        score: 0,
-        correctSorts: 0,
-        totalTasks: tasks.length,
-      });
-      setCurrentTaskIndex(0);
     }
   };
+  
+    const handleTourNext = () => {
+      if (tourState.step < tourState.totalSteps - 1) {
+        setTourState(prev => ({
+          ...prev,
+          step: prev.step + 1,
+        }));
+      } else {
+        setTourState(prev => ({
+          ...prev,
+          isActive: false,
+        }));
+      }
+    };
+  
+    const handleTourSkip = () => {
+      setTourState(prev => ({
+        ...prev,
+        isActive: false,
+      }));
+    };
+  
+    const handleTourBoxClick = (type: "toolbox" | "trash") => {
+      if (!tourState.isActive) return;
+      
+      if (tourState.step === 1 && type === "toolbox") {
+        handleTourNext();
+      } else if (tourState.step === 2 && type === "trash") {
+        handleTourNext();
+      }
+    };
+  
+      
 
   const sortTask = useCallback(
     (taskId: string, isCorrect: boolean, choice: "keep" | "toss") => {
+      if (tourState.isActive) {
+        handleTourBoxClick(choice === "keep" ? "toolbox" : "trash");
+        return;
+      }
       const taskElement = document.querySelector(".animate-conveyor");
       if (taskElement) {
         const rect = taskElement.getBoundingClientRect();
@@ -247,35 +439,66 @@ export const TaskSortingGame = () => {
         setCurrentTaskIndex((prev) => prev + 1);
       }, 500); // Match animation duration
     },
-    [isMuted]
+    [isMuted, tourState.isActive]
   );
 
   const handleKeep = useCallback(() => {
+  if (tourState.isActive) {
+      handleTourBoxClick("toolbox");
+      return;
+    }
     if (currentTaskIndex < gameState.tasks.length) {
       const currentTask = gameState.tasks[currentTaskIndex];
       sortTask(currentTask.id, currentTask.isRelevant, "keep");
     }
-  }, [currentTaskIndex, gameState.tasks, sortTask]);
+  }, [currentTaskIndex, gameState.tasks, sortTask, tourState.isActive]);
 
   const handleToss = useCallback(() => {
+  if (tourState.isActive) {
+      handleTourBoxClick("trash");
+      return;
+    }
     if (currentTaskIndex < gameState.tasks.length) {
       const currentTask = gameState.tasks[currentTaskIndex];
       sortTask(currentTask.id, !currentTask.isRelevant, "toss");
     }
-  }, [currentTaskIndex, gameState.tasks, sortTask]);
+  }, [currentTaskIndex, gameState.tasks, sortTask, tourState.isActive]);
 
   useEffect(() => {
     if (
       gameState.phase === "playing" &&
-      currentTaskIndex >= gameState.tasks.length
+      currentTaskIndex >= gameState.tasks.length &&
+      !tourState.isActive
     ) {
       setTimeout(() => {
         setGameState((prev) => ({ ...prev, phase: "results" }));
       }, 1000);
       stopBackgroundMusic();
     }
-  }, [currentTaskIndex, gameState.phase, gameState.tasks.length]);
-
+  }, [currentTaskIndex, gameState.phase, gameState.tasks.length, tourState.isActive]);
+  
+  useEffect(() => {
+    // Only apply speed changes during the playing phase
+    if (gameState.phase === "playing"  && !tourState.isActive) {
+      // Define initial and final speeds (in seconds)
+      const initialSpeed = 10;
+      const finalSpeed = 3;
+      const totalTasks = gameState.totalTasks;
+  
+      // Calculate the new speed based on the current task index
+      // Use a linear interpolation formula: start + (end - start) * (progress)
+      const newSpeed =
+        initialSpeed -
+        ((initialSpeed - finalSpeed) * currentTaskIndex) / (totalTasks - 1);
+  
+      // Update the CSS variable
+      document.documentElement.style.setProperty(
+        "--conveyor-speed",
+        `${newSpeed}s`
+      );
+    }
+  }, [currentTaskIndex, gameState.phase, gameState.totalTasks, tourState.isActive]);
+  
   const resetGame = () => {
     setGameState({
       phase: "input",
@@ -290,6 +513,8 @@ export const TaskSortingGame = () => {
     setAnimatingTask(null);
     setShowFeedback(null);
     stopBackgroundMusic();
+    setTourState(prev => ({ ...prev, isActive: false, step: 0 }));
+ 
   };
 
   const handleToggleMute = () => {
@@ -303,6 +528,7 @@ export const TaskSortingGame = () => {
       return newMutedState;
     });
   };
+
 
   const currentTask = gameState.tasks[currentTaskIndex];
 
@@ -358,7 +584,7 @@ export const TaskSortingGame = () => {
 }
 
 .animate-conveyor {
-  animation: conveyor 15s linear infinite;
+  animation: conveyor var(--conveyor-speed) linear infinite;
 }
 
 .clickable-area {
@@ -419,6 +645,19 @@ export const TaskSortingGame = () => {
 .animate-pulse-glow-incorrect {
   animation: pulse-glow-incorrect 1s ease-in-out infinite;
 }
+
+.tour-highlight {
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tour-card {
+  animation: fade-in 0.5s ease-out;
+}
 `;
     document.head.appendChild(style);
 
@@ -452,69 +691,6 @@ export const TaskSortingGame = () => {
     }
   }, [gameState.phase]);
 
-  // Instructions screen
-  if (gameState.phase === "instructions") {
-    return (
-      <div className="min-h-screen bg-gradient-forest flex flex-col items-center justify-center p-8">
-        <div className="text-center max-w-2xl">
-          <BearMascot score={0} isPlaying={false} isGenerating={false} />
-          <h1 className="text-4xl font-bold text-primary-foreground mb-6">
-            Welcome to Bear's Task Factory!
-          </h1>
-
-          <Card className="p-6 mb-6 bg-card/80 backdrop-blur-sm">
-            <h2 className="text-2xl font-bold mb-4 text-foreground">
-              How to Play
-            </h2>
-            <div className="space-y-4 text-left">
-              <div className="flex items-start">
-                <div className="bg-honey rounded-full p-2 mr-3">
-                  <Target className="w-5 h-5 text-bear-brown" />
-                </div>
-                <p className="text-foreground">
-                  Enter your goal and we'll generate related tasks
-                </p>
-              </div>
-              <div className="flex items-start">
-                <div className="bg-honey rounded-full p-2 mr-3">
-                  <Wrench className="w-5 h-5 text-bear-brown" />
-                </div>
-                <p className="text-foreground">
-                  Click the toolbox to KEEP tasks that help achieve your goal
-                </p>
-              </div>
-              <div className="flex items-start">
-                <div className="bg-honey rounded-full p-2 mr-3">
-                  <Trash2 className="w-5 h-5 text-bear-brown" />
-                </div>
-                <p className="text-foreground">
-                  Click the trash can to TOSS tasks that don't help
-                </p>
-              </div>
-              <div className="flex items-start">
-                <div className="bg-honey rounded-full p-2 mr-3">
-                  <Star className="w-5 h-5 text-bear-brown" />
-                </div>
-                <p className="text-foreground">
-                  Earn points for correct decisions and see your final score!
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          <Button
-            onClick={() =>
-              setGameState((prev) => ({ ...prev, phase: "input" }))
-            }
-            className="bg-gradient-honey text-bear-brown font-bold hover:scale-105 transition-transform px-8 py-3 text-lg"
-          >
-            Let's Get Started!
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   if (gameState.phase === "input") {
     return (
       <div className="min-h-screen bg-gradient-forest flex flex-col items-center justify-center p-8">
@@ -539,26 +715,14 @@ export const TaskSortingGame = () => {
                 className="bg-card border-wood"
               />
             </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={() =>
-                  setGameState((prev) => ({ ...prev, phase: "instructions" }))
-                }
-                variant="outline"
-                className="flex-1"
-              >
-                <HelpCircle className="w-4 h-4 mr-2" />
-                Instructions
-              </Button>
-              <Button
-                onClick={startGame}
-                disabled={!goalInput.trim()}
-                className="flex-1 bg-gradient-honey text-bear-brown font-bold hover:scale-105 transition-transform"
-              >
-                <Target className="w-4 h-4 mr-2" />
-                Start Sorting!
-              </Button>
-            </div>
+            <Button
+              onClick={startGame}
+              disabled={!goalInput.trim()}
+              className="w-full bg-gradient-honey text-bear-brown font-bold hover:scale-105 transition-transform"
+            >
+              <Target className="w-4 h-4 mr-2" />
+              Start Sorting!
+            </Button>
           </div>
         </div>
       </div>
@@ -662,24 +826,12 @@ export const TaskSortingGame = () => {
               })}
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={() =>
-                setGameState((prev) => ({ ...prev, phase: "instructions" }))
-              }
-              variant="outline"
-              className="flex-1"
-            >
-              <HelpCircle className="w-4 h-4 mr-2" />
-              Instructions
-            </Button>
-            <Button
-              onClick={resetGame}
-              className="flex-1 bg-gradient-honey text-bear-brown font-bold hover:scale-105 transition-transform"
-            >
-              🐻 Play Again
-            </Button>
-          </div>
+          <Button
+            onClick={resetGame}
+            className="bg-gradient-honey text-bear-brown font-bold hover:scale-105 transition-transform"
+          >
+            🐻 Play Again
+          </Button>
         </div>
       </div>
     );
@@ -687,6 +839,14 @@ export const TaskSortingGame = () => {
 
   return (
     <div className="min-h-screen bg-gradient-forest relative overflow-hidden">
+  {/* Tour Overlay */}
+      <TourOverlay
+        tourState={tourState}
+        onNextStep={handleTourNext}
+        onSkipTour={handleTourSkip}
+        toolboxRef={toolboxRef}
+        trashRef={trashRef}
+      />
       {/* Header */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
         <BearMascot
@@ -720,16 +880,7 @@ export const TaskSortingGame = () => {
             <Volume2 className="w-4 h-4" />
           )}
         </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() =>
-            setGameState((prev) => ({ ...prev, phase: "instructions" }))
-          }
-          className="rounded-full bg-card/80 backdrop-blur-sm"
-        >
-          <HelpCircle className="w-4 h-4" />
-        </Button>
+      
       </div>
 
       {/* Progress */}
@@ -740,13 +891,16 @@ export const TaskSortingGame = () => {
       </div>
 
       {/* Conveyor Belt */}
-      <div className="absolute top-1/2 -translate-y-1/2 w-full h-32 bg-wood border-y-4 border-wood-light">
+      <div className="absolute top-1/2 -translate-y-1/2 w-full h-32 bg-wood border-y-4 border-wood-light conveyor-belt"
+       style={{ touchAction: 'none' }}
+      >
         <div className="w-full h-full bg-gradient-wood opacity-80 relative overflow-hidden">
           {currentTask && !currentTask.processed && !animatingTask && (
             <div
               ref={conveyorRef}
               className="absolute top-1/3 -translate-y-1/2 animate-conveyor"
-              key={currentTask.id} // This ensures each task starts from the beginning
+              key={currentTask.id}
+              style={{ touchAction: 'none' }}
             >
               <TaskCard task={currentTask} />
             </div>
