@@ -163,15 +163,15 @@ const TourOverlay = ({
     },
     {
       title: "Keep Relevant Tasks",
-      description: "Tap the green toolbox to KEEP tasks that help achieve your goal. Try tapping it now!",
+      description: "Tap the green toolbox to KEEP tasks that help achieve your goal.",
       highlight: "toolbox",
-      action: "Tap the toolbox",
+      action: "Next",
     },
     {
       title: "Toss Irrelevant Tasks",
-      description: "Tap the red trash can to TOSS tasks that don't help your goal. Give it a try!",
+      description: "Tap the red trash can to TOSS tasks that don't help your goal.",
       highlight: "trash",
-      action: "Tap the trash can",
+      action: "Next",
     },
     {
       title: "You're Ready!",
