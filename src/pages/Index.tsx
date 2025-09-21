@@ -111,6 +111,7 @@ export const TaskSortingGame = () => {
   const conveyorRef = useRef<HTMLDivElement>(null);
   const gameAreaRef = useRef<HTMLDivElement>(null);
   const taskTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const currentConveyorSpeedRef = useRef(10); // Track current speed in seconds
 
   const startGame = async () => {
     setGameState((prev) => ({
@@ -184,10 +185,6 @@ export const TaskSortingGame = () => {
       // Play wrong sound for missed task
       playWrongSound(isMuted);
 
-      // Show missed task feedback
-      // setMissedTaskFeedback("Task Missed! -5 points");
-      // setTimeout(() => setMissedTaskFeedback(null), 2000);
-
       // Update game state
       setGameState((prev) => {
         const updatedTasks = prev.tasks.map((task) =>
@@ -218,18 +215,13 @@ export const TaskSortingGame = () => {
         clearTimeout(taskTimeoutRef.current);
       }
 
-      // Calculate current conveyor speed
-      const initialSpeed = 10;
-      const finalSpeed = 0.5;
-      const totalTasks = gameState.totalTasks;
-      const currentSpeed =
-        initialSpeed -
-        ((initialSpeed - finalSpeed) * currentTaskIndex) / (totalTasks - 1);
+      // Use the current conveyor speed for the timeout
+      const timeoutDuration = currentConveyorSpeedRef.current * 1000;
 
-      // Set timeout for current task (convert to milliseconds and add a small buffer)
+      // Set timeout for current task
       taskTimeoutRef.current = setTimeout(() => {
         handleMissedTask();
-      }, (currentSpeed * 1000) + 100); // Small buffer to ensure task reaches the end
+      }, timeoutDuration);
     }
 
     // Cleanup on unmount or when task changes
@@ -238,7 +230,7 @@ export const TaskSortingGame = () => {
         clearTimeout(taskTimeoutRef.current);
       }
     };
-  }, [currentTaskIndex, gameState.phase, gameState.totalTasks, tourState.isActive, handleMissedTask]);
+  }, [currentTaskIndex, gameState.phase, tourState.isActive, handleMissedTask]);
 
   const sortTask = useCallback(
     (taskId: string, isCorrect: boolean, choice: "keep" | "toss") => {
@@ -409,16 +401,17 @@ export const TaskSortingGame = () => {
     if (gameState.phase === "playing" && !tourState.isActive) {
       // Define initial and final speeds (in seconds)
       const initialSpeed = 10;
-      const finalSpeed = 3;
+      const finalSpeed = 1;
       const totalTasks = gameState.totalTasks;
 
       // Calculate the new speed based on the current task index
-      // Use a linear interpolation formula: start + (end - start) * (progress)
-      const newSpeed =
-        initialSpeed -
-        ((initialSpeed - finalSpeed) * currentTaskIndex) / (totalTasks - 1);
+      const newSpeed = Math.max(
+        finalSpeed,
+        initialSpeed - ((initialSpeed - finalSpeed) * currentTaskIndex) / (totalTasks - 1)
+      );
 
-      // Update the CSS variable
+      // Update the ref and CSS variable
+      currentConveyorSpeedRef.current = newSpeed;
       document.documentElement.style.setProperty(
         "--conveyor-speed",
         `${newSpeed}s`
@@ -453,6 +446,7 @@ export const TaskSortingGame = () => {
       currentX: 0,
       isDragging: false,
     });
+    currentConveyorSpeedRef.current = 10;
 
     // Clear any remaining timeout
     if (taskTimeoutRef.current) {
@@ -522,12 +516,12 @@ export const TaskSortingGame = () => {
     transform: translateX(100vw);
   }
   100% {
-    transform: translateX(-300px);
+    transform: translateX(-100%);
   }
 }
 
 .animate-conveyor {
-  animation: conveyor var(--conveyor-speed) linear infinite;
+  animation: conveyor var(--conveyor-speed) linear forwards;
 }
 
 .clickable-area {
