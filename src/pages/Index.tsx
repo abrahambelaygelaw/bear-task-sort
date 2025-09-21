@@ -219,7 +219,7 @@ export const TaskSortingGame = () => {
       }
 
       // Calculate current conveyor speed
-      const initialSpeed = 12;
+      const initialSpeed = 8;
       const finalSpeed = 1;
       const totalTasks = gameState.totalTasks;
       const currentSpeed =
