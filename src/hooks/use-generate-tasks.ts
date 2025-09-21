@@ -15,7 +15,7 @@ const UseGenerateTasks = async (goal: string): Promise<Task[]> => {
 
   const prompt = `Given the user goal: "${goal}"
   
-  Generate exactly 5 highly relevant tasks and exactly 5 a mix of irrelevant tasks and some tasks that are related to the same work but distraction.
+  Generate exactly 10 highly relevant tasks and exactly 10 a mix of irrelevant tasks and some tasks that are related to the same work but distraction.
   
   Format your response as follows:
   Relevant: [task description]
@@ -23,6 +23,16 @@ const UseGenerateTasks = async (goal: string): Promise<Task[]> => {
   Relevant: [task description]
   Relevant: [task description]
   Relevant: [task description]
+  Relevant: [task description]
+  Relevant: [task description]
+  Relevant: [task description]
+  Relevant: [task description]
+  Relevant: [task description]
+  Irrelevant: [task description]
+  Irrelevant: [task description]
+  Irrelevant: [task description]
+  Irrelevant: [task description]
+  Irrelevant: [task description]
   Irrelevant: [task description]
   Irrelevant: [task description]
   Irrelevant: [task description]
@@ -71,7 +81,7 @@ const UseGenerateTasks = async (goal: string): Promise<Task[]> => {
     let irrelevantCount = 0;
 
     for (const line of lines) {
-      if (line.startsWith('Relevant:') && relevantCount < 5) {
+      if (line.startsWith('Relevant:') && relevantCount < 10) {
         tasks.push({
           id: `r${relevantCount}`,
           text: line.replace('Relevant:', '').trim(),
@@ -79,7 +89,7 @@ const UseGenerateTasks = async (goal: string): Promise<Task[]> => {
           processed: false
         });
         relevantCount++;
-      } else if (line.startsWith('Irrelevant:') && irrelevantCount < 5) {
+      } else if (line.startsWith('Irrelevant:') && irrelevantCount < 10) {
         tasks.push({
           id: `ir${irrelevantCount}`,
           text: line.replace('Irrelevant:', '').trim(),
@@ -90,7 +100,7 @@ const UseGenerateTasks = async (goal: string): Promise<Task[]> => {
       }
       
       // Stop if we have all tasks
-      if (relevantCount === 5 && irrelevantCount === 5) break;
+      if (relevantCount === 10 && irrelevantCount === 10) break;
     }
 
     // Fallback if we didn't get enough tasks from the API
