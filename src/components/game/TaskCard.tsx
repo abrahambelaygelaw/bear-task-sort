@@ -28,9 +28,9 @@ export const TaskCard = ({
     if (!isDragging) return null;
     
     const threshold = 80;
-    if (swipeOffset.y < -threshold) {
+    if (swipeOffset.x < -threshold) {
       return "🗑️ Toss";
-    } else if (swipeOffset.y > threshold) {
+    } else if (swipeOffset.x > threshold) {
       return "🛠️ Keep";
     }
     return null;

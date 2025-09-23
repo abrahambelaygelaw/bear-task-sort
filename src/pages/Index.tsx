@@ -348,17 +348,17 @@ export const TaskSortingGame = () => {
   const handleTouchEnd = useCallback(() => {
     if (!swipeState.isDragging || tourState.isActive) return;
     
-    const deltaY = swipeState.currentY - swipeState.startY;
-    const deltaX = Math.abs(swipeState.currentX - swipeState.startX);
+    const deltaX = swipeState.currentX - swipeState.startX;
+    const deltaY = Math.abs(swipeState.currentY - swipeState.startY);
     const threshold = 80;
     
-    // Only trigger if it's more vertical than horizontal swipe
-    if (Math.abs(deltaY) > threshold && Math.abs(deltaY) > deltaX) {
-      if (deltaY < 0) {
-        // Swipe up = toss
+    // Only trigger if it's more horizontal than vertical swipe
+    if (Math.abs(deltaX) > threshold && Math.abs(deltaX) > deltaY) {
+      if (deltaX < 0) {
+        // Swipe left = toss
         handleToss();
       } else {
-        // Swipe down = keep
+        // Swipe right = keep
         handleKeep();
       }
     }
