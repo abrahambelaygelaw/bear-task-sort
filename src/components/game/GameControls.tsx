@@ -34,8 +34,8 @@ export const GameControls = ({
   if (isMobile) {
     return (
       <>
-        {/* Trash Bin - Above conveyor belt */}
-        <div className="absolute top-1/2 -translate-y-60 left-1/2 -translate-x-1/2 z-10">
+        {/* Trash Bin - Left side */}
+        <div className="absolute top-1/2 -translate-y-1/2 left-4 z-10">
           <div ref={trashRef}>
             <div
               onClick={onToss}
@@ -50,8 +50,8 @@ export const GameControls = ({
           </div>
         </div>
 
-        {/* Toolbox - Below conveyor belt */}
-        <div className="absolute top-1/2 translate-y-40 left-1/2 -translate-x-1/2 z-10">
+        {/* Toolbox - Right side */}
+        <div className="absolute top-1/2 -translate-y-1/2 right-4 z-10">
           <div ref={toolboxRef}>
             <div
               onClick={onKeep}
@@ -71,20 +71,6 @@ export const GameControls = ({
 
   return (
     <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-8 lg:gap-32">
-      {/* Toolbox */}
-      <div ref={toolboxRef}>
-        <div
-          onClick={onKeep}
-          className={`clickable-area w-32 h-32 bg-forest border-4 flex flex-col items-center justify-center
-						rounded-md cursor-pointer ${getGlowClass("toolbox")}`}
-        >
-          <Wrench className="w-8 h-8 text-primary-foreground mb-2" />
-          <span className="text-primary-foreground font-bold text-sm">
-            Keep
-          </span>
-        </div>
-      </div>
-
       {/* Trash Bin */}
       <div ref={trashRef}>
         <div
@@ -95,6 +81,20 @@ export const GameControls = ({
           <Trash2 className="w-8 h-8 text-destructive-foreground mb-2" />
           <span className="text-destructive-foreground font-bold text-sm">
             Toss
+          </span>
+        </div>
+      </div>
+
+      {/* Toolbox */}
+      <div ref={toolboxRef}>
+        <div
+          onClick={onKeep}
+          className={`clickable-area w-32 h-32 bg-forest border-4 flex flex-col items-center justify-center
+						rounded-md cursor-pointer ${getGlowClass("toolbox")}`}
+        >
+          <Wrench className="w-8 h-8 text-primary-foreground mb-2" />
+          <span className="text-primary-foreground font-bold text-sm">
+            Keep
           </span>
         </div>
       </div>
