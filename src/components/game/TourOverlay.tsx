@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowDown, ArrowUp, Smartphone } from "lucide-react";
+import { ArrowLeft, ArrowRight, Smartphone } from "lucide-react";
 import { TaskCard } from "./TaskCard";
 
 interface TourState {
@@ -39,17 +39,17 @@ export const TourOverlay = ({
       isMobile: true,
     },
     {
-      title: "Swipe Down to Keep ⬇️",
+      title: "Swipe Right to Keep ➡️",
       description:
-        "Swipe DOWN on tasks that help achieve your goal. The toolbox is below the conveyor belt.",
+        "Swipe RIGHT on tasks that help achieve your goal. The toolbox is on the right below the belt.",
       highlight: "toolbox",
       action: "Next",
       isMobile: true,
     },
     {
-      title: "Swipe Up to Toss ⬆️",
+      title: "Swipe Left to Toss ⬅️",
       description:
-        "Swipe UP on tasks that don't help your goal. The trash can is above the conveyor belt.",
+        "Swipe LEFT on tasks that don't help your goal. The trash can is on the left below the belt.",
       highlight: "trash",
       action: "Next",
       isMobile: true,
@@ -158,8 +158,8 @@ export const TourOverlay = ({
               <div className="mb-4 flex justify-center gap-4">
                  
                   <div className="flex flex-col items-center">
-                    <ArrowDown className="w-8 h-8 text-green-500 animate-bounce" />
-                    <span className="text-sm text-green-600 font-medium">Swipe Down</span>
+                    <ArrowRight className="w-8 h-8 text-green-500 animate-bounce" />
+                    <span className="text-sm text-green-600 font-medium">Swipe Right</span>
                   </div>
                 <div className="flex items-center">
                   <Smartphone className="w-6 h-6 text-muted-foreground" />
@@ -170,8 +170,8 @@ export const TourOverlay = ({
               <div className="mb-4 flex justify-center gap-4">
                  
                   <div className="flex flex-col items-center">
-                    <ArrowUp className="w-8 h-8 text-red-500 animate-bounce" />
-                    <span className="text-sm text-red-600 font-medium">Swipe Up</span>
+                    <ArrowLeft className="w-8 h-8 text-red-500 animate-bounce" />
+                    <span className="text-sm text-red-600 font-medium">Swipe Left</span>
                   </div>
                 <div className="flex items-center">
                   <Smartphone className="w-6 h-6 text-muted-foreground" />
