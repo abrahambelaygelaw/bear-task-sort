@@ -33,7 +33,7 @@ export const GameControls = ({
 
   if (isMobile) {
     return (
-      <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-16 px-4">
+      <div className="absolute bottom-24 left-0 right-0 flex justify-between gap-16 px-4">
         {/* Trash Bin */}
         <div ref={trashRef}>
           <div
