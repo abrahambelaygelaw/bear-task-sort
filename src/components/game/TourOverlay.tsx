@@ -41,7 +41,7 @@ export const TourOverlay = ({
     {
       title: "Swipe Right to Keep ➡️",
       description:
-        "Swipe RIGHT on tasks that help achieve your goal. The toolbox is on the right side.",
+        "Swipe RIGHT on tasks that help achieve your goal. The toolbox is on the right below the belt.",
       highlight: "toolbox",
       action: "Next",
       isMobile: true,
@@ -49,7 +49,7 @@ export const TourOverlay = ({
     {
       title: "Swipe Left to Toss ⬅️",
       description:
-        "Swipe LEFT on tasks that don't help your goal. The trash can is on the left side.",
+        "Swipe LEFT on tasks that don't help your goal. The trash can is on the left below the belt.",
       highlight: "trash",
       action: "Next",
       isMobile: true,

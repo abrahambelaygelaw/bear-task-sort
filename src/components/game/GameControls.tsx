@@ -33,39 +33,35 @@ export const GameControls = ({
 
   if (isMobile) {
     return (
-      <>
-        {/* Trash Bin - Left side */}
-        <div className="absolute top-1/2 -translate-y-1/2 left-4 z-10">
-          <div ref={trashRef}>
-            <div
-              onClick={onToss}
-              className={`clickable-area w-24 h-24 bg-destructive border-4 flex flex-col items-center justify-center
-							rounded-md cursor-pointer ${getGlowClass("trash")}`}
-            >
-              <Trash2 className="w-6 h-6 text-destructive-foreground mb-1" />
-              <span className="text-destructive-foreground font-bold text-xs">
-                Toss
-              </span>
-            </div>
+      <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-16 px-4">
+        {/* Trash Bin */}
+        <div ref={trashRef}>
+          <div
+            onClick={onToss}
+            className={`clickable-area w-24 h-24 bg-destructive border-4 flex flex-col items-center justify-center
+						rounded-md cursor-pointer ${getGlowClass("trash")}`}
+          >
+            <Trash2 className="w-6 h-6 text-destructive-foreground mb-1" />
+            <span className="text-destructive-foreground font-bold text-xs">
+              Toss
+            </span>
           </div>
         </div>
 
-        {/* Toolbox - Right side */}
-        <div className="absolute top-1/2 -translate-y-1/2 right-4 z-10">
-          <div ref={toolboxRef}>
-            <div
-              onClick={onKeep}
-              className={`clickable-area w-24 h-24 bg-forest border-4 flex flex-col items-center justify-center
-							rounded-md cursor-pointer ${getGlowClass("toolbox")}`}
-            >
-              <Wrench className="w-6 h-6 text-primary-foreground mb-1" />
-              <span className="text-primary-foreground font-bold text-xs">
-                Keep
-              </span>
-            </div>
+        {/* Toolbox */}
+        <div ref={toolboxRef}>
+          <div
+            onClick={onKeep}
+            className={`clickable-area w-24 h-24 bg-forest border-4 flex flex-col items-center justify-center
+						rounded-md cursor-pointer ${getGlowClass("toolbox")}`}
+          >
+            <Wrench className="w-6 h-6 text-primary-foreground mb-1" />
+            <span className="text-primary-foreground font-bold text-xs">
+              Keep
+            </span>
           </div>
         </div>
-      </>
+      </div>
     );
   }
 
