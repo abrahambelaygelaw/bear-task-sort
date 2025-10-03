@@ -401,14 +401,27 @@ export const TaskSortingGame = () => {
     if (gameState.phase === "playing" && !tourState.isActive) {
       // Define initial and final speeds (in seconds)
       const initialSpeed = 10;
-      const finalSpeed = 1;
+      const finalSpeed = 3;
       const totalTasks = gameState.totalTasks;
 
       // Calculate the new speed based on the current task index
-      const newSpeed = Math.max(
-        finalSpeed,
-        initialSpeed - ((initialSpeed - finalSpeed) * currentTaskIndex) / (totalTasks - 1)
-      );
+      let newSpeed;
+    
+      if (totalTasks <= 4) {
+        // If there are 4 or fewer tasks, just use the final speed
+        newSpeed = finalSpeed;
+        
+      } else {
+        // For the last four tasks, use the final speed
+        if (currentTaskIndex >= totalTasks - 4) {
+          newSpeed = finalSpeed;
+        } else {
+          // Gradually increase speed until we reach the last four tasks
+          const progress = currentTaskIndex / (totalTasks - 4);
+          newSpeed = initialSpeed - (initialSpeed - finalSpeed) * progress;
+        }
+      }
+      console.log("new speed:", newSpeed);
 
       // Update the ref and CSS variable
       currentConveyorSpeedRef.current = newSpeed;
