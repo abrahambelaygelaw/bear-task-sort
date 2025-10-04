@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Target, Loader, Check, X } from "lucide-react";
 import { UseGenerateTasks } from "@/hooks/use-generate-tasks";
 import correctSound from "@/assets/sounds/correct.mp3";
@@ -13,6 +14,9 @@ import { TourOverlay } from "@/components/game/TourOverlay";
 import { GameHeader } from "@/components/game/GameHeader";
 import { ConveyorBelt } from "@/components/game/ConveyorBelt";
 import { GameControls } from "@/components/game/GameControls";
+import { HighScoreBoard } from "@/components/game/HighScoreBoard";
+import { saveHighScore } from "@/lib/supabase";
+import { toast } from "sonner";
 
 // Add sound effects
 const playCorrectSound = (isMuted: boolean) => {
@@ -44,6 +48,8 @@ interface Task {
   isRelevant: boolean;
   processed: boolean;
   userChoice?: "keep" | "toss" | "missed";
+  startTime?: number;
+  responseTime?: number;
 }
 
 interface GameState {
@@ -82,6 +88,8 @@ export const TaskSortingGame = () => {
     correctSorts: 0,
     totalTasks: 0,
   });
+  const [playerName, setPlayerName] = useState("");
+  const [savingScore, setSavingScore] = useState(false);
   const [tourState, setTourState] = useState<TourState>({
     isActive: false,
     step: 0,
@@ -121,13 +129,24 @@ export const TaskSortingGame = () => {
 
     try {
       const tasks = await UseGenerateTasks(goalInput);
+      const tasksWithTiming = tasks.map(task => ({
+        ...task,
+        startTime: undefined,
+        responseTime: undefined
+      }));
+      
+      // Set start time for first task
+      if (tasksWithTiming.length > 0) {
+        tasksWithTiming[0].startTime = Date.now();
+      }
+      
       setGameState({
         phase: "playing",
         goal: goalInput,
-        tasks,
+        tasks: tasksWithTiming,
         score: 0,
         correctSorts: 0,
-        totalTasks: tasks.length,
+        totalTasks: tasksWithTiming.length,
       });
       playBackgroundMusic(isMuted);
 
@@ -189,9 +208,15 @@ export const TaskSortingGame = () => {
       setGameState((prev) => {
         const updatedTasks = prev.tasks.map((task) =>
           task.id === currentTask.id
-            ? { ...task, processed: true, userChoice: "missed" as const }
+            ? { ...task, processed: true, userChoice: "missed" as const, responseTime: currentConveyorSpeedRef.current * 1000 }
             : task
         );
+
+        // Set start time for next task
+        const nextIndex = currentTaskIndex + 1;
+        if (nextIndex < updatedTasks.length) {
+          updatedTasks[nextIndex].startTime = Date.now();
+        }
 
         return {
           ...prev,
@@ -253,6 +278,17 @@ export const TaskSortingGame = () => {
         taskTimeoutRef.current = null;
       }
 
+      // Calculate response time and points
+      const currentTask = gameState.tasks.find(t => t.id === taskId);
+      const responseTime = currentTask?.startTime ? Date.now() - currentTask.startTime : 0;
+      const maxTime = currentConveyorSpeedRef.current * 1000;
+      const timeRatio = Math.max(0, 1 - responseTime / maxTime);
+      
+      // Base points: 100, Speed bonus: up to 50 points
+      const basePoints = isCorrect ? 100 : 0;
+      const speedBonus = isCorrect ? Math.floor(timeRatio * 50) : 0;
+      const taskPoints = basePoints + speedBonus;
+
       // Play sound effect
       if (isCorrect) {
         playCorrectSound(isMuted);
@@ -272,11 +308,17 @@ export const TaskSortingGame = () => {
         setGameState((prev) => {
           const updatedTasks = prev.tasks.map((task) =>
             task.id === taskId
-              ? { ...task, processed: true, userChoice: choice }
+              ? { ...task, processed: true, userChoice: choice, responseTime }
               : task
           );
 
-          const newScore = isCorrect ? prev.score + 10 : prev.score;
+          // Set start time for next task
+          const nextIndex = currentTaskIndex + 1;
+          if (nextIndex < updatedTasks.length) {
+            updatedTasks[nextIndex].startTime = Date.now();
+          }
+
+          const newScore = prev.score + taskPoints;
           const newCorrectSorts = isCorrect
             ? prev.correctSorts + 1
             : prev.correctSorts;
@@ -447,6 +489,8 @@ export const TaskSortingGame = () => {
       totalTasks: 0,
     });
     setGoalInput("");
+    setPlayerName("");
+    setSavingScore(false);
     setCurrentTaskIndex(0);
     setAnimatingTask(null);
     setShowFeedback(null);
@@ -478,6 +522,32 @@ export const TaskSortingGame = () => {
       }
       return newMutedState;
     });
+  };
+
+  const handleSaveHighScore = async () => {
+    if (!playerName.trim() || savingScore) return;
+
+    setSavingScore(true);
+    try {
+      const accuracy = (gameState.correctSorts / gameState.tasks.length) * 100;
+
+      await saveHighScore({
+        player_name: playerName.trim(),
+        score: gameState.score,
+        goal: gameState.goal,
+        accuracy: Number(accuracy.toFixed(2)),
+        tasks_completed: gameState.tasks.length,
+      });
+
+      toast.success("High score saved!", {
+        description: `Your score of ${gameState.score} has been added to the leaderboard.`,
+      });
+    } catch (error) {
+      console.error("Error saving high score:", error);
+      toast.error("Failed to save high score. Please try again.");
+    } finally {
+      setSavingScore(false);
+    }
   };
 
   const currentTask = gameState.tasks[currentTaskIndex];
@@ -708,95 +778,136 @@ export const TaskSortingGame = () => {
     const accuracy = (gameState.correctSorts / gameState.totalTasks) * 100;
 
     return (
-      <div className="min-h-screen bg-gradient-forest flex flex-col items-center justify-center p-8">
-        <div className="text-center max-w-2xl w-full">
-          <BearMascot
-            score={gameState.score}
-            isPlaying={false}
-            isGenerating={false}
-          />
-          <h2 className="text-3xl font-bold text-primary-foreground mb-4">
-            Great Job! 🎉
-          </h2>
-          <div className="bg-card rounded-lg p-6 mb-6 space-y-4">
-            <div className="text-2xl font-bold text-honey">
-              Goal: {gameState.goal}
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-sm mb-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-forest">
-                  {gameState.score}
-                </div>
-                <div className="text-muted-foreground">Final Score</div>
+      <div className="min-h-screen bg-gradient-forest flex items-center justify-center p-4">
+        <div className="w-full max-w-6xl grid md:grid-cols-2 gap-6">
+          <div className="w-full">
+            <div className="bg-card rounded-lg p-6 mb-6">
+              <div className="flex justify-center mb-4">
+                <BearMascot
+                  score={gameState.score}
+                  isPlaying={false}
+                  isGenerating={false}
+                />
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-honey">
-                  {accuracy.toFixed(0)}%
+              <h2 className="text-3xl font-bold text-foreground mb-4 text-center">
+                Great Job! 🎉
+              </h2>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="p-4 bg-gradient-honey rounded-lg text-center">
+                  <div className="text-sm text-bear-brown font-medium">Final Score</div>
+                  <div className="text-3xl font-bold text-bear-brown">
+                    {gameState.score}
+                  </div>
                 </div>
-                <div className="text-muted-foreground">Accuracy</div>
+                <div className="p-4 bg-gradient-sky rounded-lg text-center">
+                  <div className="text-sm text-forest font-medium">Accuracy</div>
+                  <div className="text-3xl font-bold text-forest">
+                    {accuracy.toFixed(0)}%
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <h3 className="text-xl font-bold text-foreground mb-3">
-              Task Results
-            </h3>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {gameState.tasks.map((task) => {
-                const isCorrect =
-                  (task.isRelevant && task.userChoice === "keep") ||
-                  (!task.isRelevant && task.userChoice === "toss");
-                
-                const isMissed = task.userChoice === "missed";
-
-                return (
-                  <div
-                    key={task.id}
-                    className={`p-3 rounded-lg border ${
-                      isMissed
-                        ? "bg-orange-50 border-orange-200"
-                        : isCorrect
-                        ? "bg-green-50 border-green-200"
-                        : "bg-red-50 border-red-200"
-                    }`}
+              {!savingScore && gameState.score > 0 && (
+                <div className="space-y-3 mb-6">
+                  <Label htmlFor="playerName" className="text-foreground font-semibold">
+                    Save Your High Score
+                  </Label>
+                  <Input
+                    id="playerName"
+                    placeholder="Enter your name"
+                    value={playerName}
+                    onChange={(e) => setPlayerName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleSaveHighScore();
+                      }
+                    }}
+                    className="bg-background"
+                  />
+                  <Button
+                    onClick={handleSaveHighScore}
+                    disabled={!playerName.trim() || savingScore}
+                    className="w-full bg-gradient-honey text-bear-brown font-bold hover:scale-105 transition-transform"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{task.text}</span>
-                      <div className="flex items-center">
+                    {savingScore ? "Saving..." : "💾 Save Score"}
+                  </Button>
+                </div>
+              )}
+
+              <h3 className="text-lg font-bold text-foreground mb-3">
+                Task Results
+              </h3>
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-2">
+                {gameState.tasks.map((task) => {
+                  const isCorrect =
+                    (task.isRelevant && task.userChoice === "keep") ||
+                    (!task.isRelevant && task.userChoice === "toss");
+                  
+                  const isMissed = task.userChoice === "missed";
+
+                  return (
+                    <div
+                      key={task.id}
+                      className={`p-3 rounded-lg border ${
+                        isMissed
+                          ? "bg-orange-50 border-orange-200"
+                          : isCorrect
+                          ? "bg-green-50 border-green-200"
+                          : "bg-red-50 border-red-200"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <span className="font-medium text-sm">{task.text}</span>
+                          <div className="text-xs mt-1">
+                            <span
+                              className={`font-medium ${
+                                task.isRelevant ? "text-green-600" : "text-red-600"
+                              }`}
+                            >
+                              {task.isRelevant ? "Relevant" : "Irrelevant"}
+                            </span>
+                            <span className="text-muted-foreground mx-1">•</span>
+                            <span className="text-muted-foreground">
+                              {isMissed
+                                ? "Missed"
+                                : `${task.userChoice === "keep" ? "Kept" : "Tossed"}`}
+                            </span>
+                            {task.responseTime && (
+                              <>
+                                <span className="text-muted-foreground mx-1">•</span>
+                                <span className="text-muted-foreground">
+                                  {(task.responseTime / 1000).toFixed(1)}s
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
                         {isMissed ? (
-                          <X className="w-5 h-5 text-orange-600 ml-2" />
+                          <X className="w-5 h-5 text-orange-600 flex-shrink-0" />
                         ) : isCorrect ? (
-                          <Check className="w-5 h-5 text-green-600 ml-2" />
+                          <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
                         ) : (
-                          <X className="w-5 h-5 text-red-600 ml-2" />
+                          <X className="w-5 h-5 text-red-600 flex-shrink-0" />
                         )}
                       </div>
                     </div>
-                    <div className="text-sm mt-1">
-                      <span
-                        className={`font-medium ${
-                          task.isRelevant ? "text-green-600" : "text-red-600"
-                        }`}
-                      >
-                        {task.isRelevant ? "Relevant" : "Irrelevant"}
-                      </span>
-                      <span className="text-muted-foreground mx-2">•</span>
-                      <span className="text-muted-foreground">
-                        {isMissed
-                          ? "You missed this task"
-                          : `You ${task.userChoice === "keep" ? "kept" : "tossed"} this task`}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+
+              <Button
+                onClick={resetGame}
+                className="w-full mt-6 bg-gradient-honey text-bear-brown font-bold hover:scale-105 transition-transform"
+              >
+                🐻 Play Again
+              </Button>
             </div>
           </div>
-          <Button
-            onClick={resetGame}
-            className="bg-gradient-honey text-bear-brown font-bold hover:scale-105 transition-transform"
-          >
-            🐻 Play Again
-          </Button>
+
+          <div className="w-full">
+            <HighScoreBoard />
+          </div>
         </div>
       </div>
     );
