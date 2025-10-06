@@ -28,7 +28,7 @@ export const BearMascot = ({ score, isPlaying, isGenerating }: BearMascotProps) 
           className="bg-gradient-honey text-bear-brown font-bold"
         >
           <Star className="w-4 h-4 mr-1" />
-          <div className="h-4 w-16">
+          <div className="h-4 w-20">
             Score: {score}
           </div>
         </Badge>
