@@ -149,10 +149,8 @@ export const TaskSortingGame = () => {
         phase: "playing",
         goal: goalInput,
         tasks: tasksWithTiming,
-        tasks: tasksWithTiming,
         score: 0,
         correctSorts: 0,
-        totalTasks: tasksWithTiming.length,
         totalTasks: tasksWithTiming.length,
       });
       playBackgroundMusic(isMuted);
