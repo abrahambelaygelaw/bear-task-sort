@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Label } from "@/components/ui/label";
 import { Target, Loader, Check, X } from "lucide-react";
 import { UseGenerateTasks } from "@/hooks/use-generate-tasks";
 import correctSound from "@/assets/sounds/correct.mp3";
@@ -15,9 +14,6 @@ import { TourOverlay } from "@/components/game/TourOverlay";
 import { GameHeader } from "@/components/game/GameHeader";
 import { ConveyorBelt } from "@/components/game/ConveyorBelt";
 import { GameControls } from "@/components/game/GameControls";
-import { HighScoreBoard } from "@/components/game/HighScoreBoard";
-import { saveHighScore } from "@/lib/supabase";
-import { toast } from "sonner";
 import { HighScoreBoard } from "@/components/game/HighScoreBoard";
 import { saveHighScore } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -54,8 +50,7 @@ interface Task {
   userChoice?: "keep" | "toss" | "missed";
   startTime?: number;
   responseTime?: number;
-  startTime?: number;
-  responseTime?: number;
+
 }
 
 interface GameState {
@@ -218,7 +213,6 @@ export const TaskSortingGame = () => {
         const updatedTasks = prev.tasks.map((task) =>
           task.id === currentTask.id
             ? { ...task, processed: true, userChoice: "missed" as const, responseTime: currentConveyorSpeedRef.current * 1000 }
-            ? { ...task, processed: true, userChoice: "missed" as const, responseTime: currentConveyorSpeedRef.current * 1000 }
             : task
         );
 
@@ -311,7 +305,6 @@ export const TaskSortingGame = () => {
         setGameState((prev) => {
           const updatedTasks = prev.tasks.map((task) =>
             task.id === taskId
-              ? { ...task, processed: true, userChoice: choice, responseTime }
               ? { ...task, processed: true, userChoice: choice, responseTime }
               : task
           );
