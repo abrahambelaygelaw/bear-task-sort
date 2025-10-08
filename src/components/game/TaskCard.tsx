@@ -51,7 +51,7 @@ export const TaskCard = ({
           : undefined,
       }}
     >
-      <div className="text-sm font-medium text-foreground mb-3">
+      <div className="text-xl font-medium text-foreground mb-3">
         {task.text}
       </div>
       {indicator && (
