@@ -67,6 +67,7 @@ interface TourState {
   step: number;
   totalSteps: number;
   hasStarted: boolean;
+  practiceStep: number;
 }
 
 interface SwipeState {
@@ -99,6 +100,7 @@ export const TaskSortingGame = () => {
     step: 0,
     totalSteps: 4,
     hasStarted: false,
+    practiceStep: 0,
   });
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [goalInput, setGoalInput] = useState("");
@@ -170,12 +172,18 @@ export const TaskSortingGame = () => {
   };
 
   const handleTourNext = () => {
+    // If we're on the practice step and haven't completed practice
+    if (tourState.step === tourState.totalSteps - 1 && tourState.practiceStep < 2) {
+      return; // Don't advance, player needs to complete practice
+    }
+    
     if (tourState.step < tourState.totalSteps - 1) {
       setTourState((prev) => ({
         ...prev,
         step: prev.step + 1,
       }));
     } else {
+      // Finished tour and practice
       setTourState((prev) => ({
         ...prev,
         isActive: false,
@@ -193,10 +201,32 @@ export const TaskSortingGame = () => {
   const handleTourBoxClick = (type: "toolbox" | "trash") => {
     if (!tourState.isActive) return;
 
+    // Regular tour steps
     if (tourState.step === 1 && type === "toolbox") {
       handleTourNext();
     } else if (tourState.step === 2 && type === "trash") {
       handleTourNext();
+    }
+    
+    // Practice step (last step)
+    if (tourState.step === tourState.totalSteps - 1) {
+      if (tourState.practiceStep === 0 && type === "toolbox") {
+        // First practice task - keep it
+        setTourState((prev) => ({
+          ...prev,
+          practiceStep: 1,
+        }));
+      } else if (tourState.practiceStep === 1 && type === "trash") {
+        // Second practice task - toss it
+        setTourState((prev) => ({
+          ...prev,
+          practiceStep: 2,
+        }));
+        // Auto-advance after a short delay
+        setTimeout(() => {
+          handleTourNext();
+        }, 1000);
+      }
     }
   };
 
@@ -476,7 +506,7 @@ export const TaskSortingGame = () => {
     setAnimatingTask(null);
     setShowFeedback(null);
     stopBackgroundMusic();
-    setTourState((prev) => ({ ...prev, isActive: false, step: 0 }));
+    setTourState((prev) => ({ ...prev, isActive: false, step: 0, practiceStep: 0 }));
     setSwipeState({
       startY: 0,
       startX: 0,
@@ -1099,6 +1129,26 @@ export const TaskSortingGame = () => {
     );
   }
 
+  // Practice tasks for tour
+  const practiceTasks = [
+    {
+      id: "practice-1",
+      text: "📧 Respond to Team Email",
+      isRelevant: true,
+      processed: false,
+    },
+    {
+      id: "practice-2",
+      text: "📱 Check Social Media",
+      isRelevant: false,
+      processed: false,
+    },
+  ];
+
+  const currentPracticeTask = tourState.step === tourState.totalSteps - 1 
+    ? practiceTasks[tourState.practiceStep]
+    : null;
+
   return (
     <div 
       ref={gameAreaRef}
@@ -1130,13 +1180,23 @@ export const TaskSortingGame = () => {
         isMobile={isMobile}
       />
 
-      {/* Conveyor Belt */}
-      <ConveyorBelt
-        currentTask={currentTask}
-        animatingTask={animatingTask}
-        swipeState={swipeState}
-        conveyorRef={conveyorRef}
-      />
+      {/* Conveyor Belt - Show practice task during practice step */}
+      {tourState.step === tourState.totalSteps - 1 && currentPracticeTask ? (
+        <div ref={conveyorRef} className="relative h-32 my-8">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="animate-pulse">
+              <TaskCard task={currentPracticeTask} />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <ConveyorBelt
+          currentTask={currentTask}
+          animatingTask={animatingTask}
+          swipeState={swipeState}
+          conveyorRef={conveyorRef}
+        />
+      )}
 
       {/* Game Controls */}
       <GameControls

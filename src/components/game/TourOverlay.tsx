@@ -8,6 +8,7 @@ interface TourState {
   step: number;
   totalSteps: number;
   hasStarted: boolean;
+  practiceStep: number;
 }
 
 interface TourOverlayProps {
@@ -55,12 +56,17 @@ export const TourOverlay = ({
       isMobile: true,
     },
     {
-      title: "You're Ready!",
+      title: "Now Let's Practice! 🎯",
       description:
-        "Great! Now you know how to play. Swipe tasks quickly to earn points. Good luck! 🎯",
+        tourState.practiceStep === 0
+          ? "Swipe RIGHT to KEEP this task about responding to team emails."
+          : tourState.practiceStep === 1
+          ? "Great! Now swipe LEFT to TOSS this social media task."
+          : "Perfect! You're ready to start the real game!",
       highlight: null,
-      action: "Start Playing!",
+      action: tourState.practiceStep < 2 ? "Practicing..." : "Start Game!",
       isMobile: true,
+      isPractice: true,
     },
   ] : [
     {
@@ -88,12 +94,17 @@ export const TourOverlay = ({
       isMobile: false,
     },
     {
-      title: "You're Ready!",
+      title: "Now Let's Practice! 🎯",
       description:
-        "Great! Now you know how to play. Sort tasks quickly to earn points. Good luck! 🎯",
+        tourState.practiceStep === 0
+          ? "Click the green toolbox to KEEP this task about responding to team emails."
+          : tourState.practiceStep === 1
+          ? "Great! Now click the red trash to TOSS this social media task."
+          : "Perfect! You're ready to start the real game!",
       highlight: null,
-      action: "Start Playing!",
+      action: tourState.practiceStep < 2 ? "Practicing..." : "Start Game!",
       isMobile: false,
+      isPractice: true,
     },
   ];
 
@@ -192,6 +203,13 @@ export const TourOverlay = ({
                     }}
                   />
                 </div>
+              </div>
+            )}
+
+            {/* Show progress for practice step */}
+            {currentStep.isPractice && tourState.practiceStep < 2 && (
+              <div className="mb-4 text-sm text-muted-foreground">
+                Practice Progress: {tourState.practiceStep}/2 tasks completed
               </div>
             )}
 
