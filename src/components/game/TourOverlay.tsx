@@ -134,6 +134,11 @@ export const TourOverlay = ({
 
   const highlightPos = getHighlightPosition();
 
+  // Don't show overlay during practice step
+  if (currentStep.isPractice) {
+    return null;
+  }
+
   return (
     <div className="fixed inset-0 z-50">
       {/* Dark overlay */}
