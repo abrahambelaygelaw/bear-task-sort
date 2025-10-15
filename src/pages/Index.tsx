@@ -1180,40 +1180,41 @@ export const TaskSortingGame = () => {
         isMobile={isMobile}
       />
 
-      {/* Practice Instructions - Show during practice step */}
-      {tourState.step === tourState.totalSteps - 1 && currentPracticeTask && (
-        <div className="absolute top-20 left-0 right-0 z-10 px-4">
-          <div className="max-w-2xl mx-auto bg-amber-500/90 backdrop-blur-sm rounded-lg p-4 shadow-lg">
-            <h3 className="text-xl font-bold text-white mb-2 text-center">
-              🎯 Practice Mode
-            </h3>
-            <p className="text-white text-center text-sm md:text-base">
-              {tourState.practiceStep === 0
-                ? isMobile 
-                  ? "Swipe RIGHT or click 'Keep' to keep this task about responding to team emails."
-                  : "Click the green 'Keep' button to keep this task about responding to team emails."
-                : tourState.practiceStep === 1
-                ? isMobile
-                  ? "Great! Now swipe LEFT or click 'Toss' to toss this social media task."
-                  : "Great! Now click the red 'Toss' button to toss this social media task."
-                : "Perfect! You're ready to play!"}
-            </p>
-            <div className="mt-2 text-center text-xs text-white/80">
-              Practice Progress: {tourState.practiceStep}/2 tasks completed
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Conveyor Belt - Show practice task during practice step */}
       {tourState.step === tourState.totalSteps - 1 && currentPracticeTask ? (
-        <div className="absolute top-1/2 -translate-y-1/2 w-full h-32 bg-wood border-y-4 border-wood-light conveyor-belt">
-          <div className="w-full h-full bg-gradient-wood opacity-80 relative overflow-hidden">
-            <div className="absolute top-[10%] left-1/2 -translate-x-1/2 -translate-y-1/2">
-              <TaskCard task={currentPracticeTask} />
+        <>
+          {/* Practice Instructions - positioned above the conveyor */}
+          <div className="absolute top-24 md:top-32 left-0 right-0 z-10 px-4">
+            <div className="max-w-2xl mx-auto bg-amber-500/90 backdrop-blur-sm rounded-lg p-4 shadow-lg">
+              <h3 className="text-xl font-bold text-white mb-2 text-center">
+                🎯 Practice Mode
+              </h3>
+              <p className="text-white text-center text-sm md:text-base">
+                {tourState.practiceStep === 0
+                  ? isMobile 
+                    ? "Swipe RIGHT or click 'Keep' to keep this task about responding to team emails."
+                    : "Click the green 'Keep' button to keep this task about responding to team emails."
+                  : tourState.practiceStep === 1
+                  ? isMobile
+                    ? "Great! Now swipe LEFT or click 'Toss' to toss this social media task."
+                    : "Great! Now click the red 'Toss' button to toss this social media task."
+                  : "Perfect! You're ready to play!"}
+              </p>
+              <div className="mt-2 text-center text-xs text-white/80">
+                Practice Progress: {tourState.practiceStep}/2 tasks completed
+              </div>
             </div>
           </div>
-        </div>
+          
+          {/* Conveyor Belt */}
+          <div className="absolute top-1/2 -translate-y-1/2 w-full h-32 bg-wood border-y-4 border-wood-light conveyor-belt pointer-events-none">
+            <div className="w-full h-full bg-gradient-wood opacity-80 relative overflow-visible">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
+                <TaskCard task={currentPracticeTask} />
+              </div>
+            </div>
+          </div>
+        </>
       ) : (
         <ConveyorBelt
           currentTask={currentTask}
