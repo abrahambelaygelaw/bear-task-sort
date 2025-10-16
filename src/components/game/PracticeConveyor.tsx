@@ -34,16 +34,18 @@ const PracticeConveyor = ({ tourState, setTourState, swipeState }:
     : { x: 0, y: 0 };
   const isDragging = swipeState.isDragging;
   useEffect(() => {
-    if (!isDragging) return null;
+    if (isDragging){
 
-    const threshold = 80;
-    if (swipeOffset.x < -threshold) {
-      if (tourState.practiceStep === 1) {
-        setTourState({ ...tourState, practiceStep: 2, isActive: false });
-      }
-    } else if (swipeOffset.x > threshold) {
-      if (tourState.practiceStep === 0) {
-        setTourState({ ...tourState, practiceStep: 1 });
+      
+      const threshold = 80;
+      if (swipeOffset.x < -threshold) {
+        if (tourState.practiceStep === 1) {
+          setTourState({ ...tourState, practiceStep: 2, isActive: false });
+        }
+      } else if (swipeOffset.x > threshold) {
+        if (tourState.practiceStep === 0) {
+          setTourState({ ...tourState, practiceStep: 1 });
+        }
       }
     }
   }, [isDragging, swipeOffset]);
