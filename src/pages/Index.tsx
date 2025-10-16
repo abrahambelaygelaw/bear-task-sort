@@ -17,6 +17,8 @@ import { GameControls } from "@/components/game/GameControls";
 import { HighScoreBoard } from "@/components/game/HighScoreBoard";
 import { saveHighScore } from "@/lib/supabase";
 import { toast } from "sonner";
+import { PracticeControls } from "@/components/game/PracticeControls";
+import PracticeConveyor from "@/components/game/PracticeConveyor";
 
 // Add sound effects
 const playCorrectSound = (isMuted: boolean) => {
@@ -189,6 +191,7 @@ export const TaskSortingGame = () => {
         isActive: false,
       }));
     }
+    console.log("handle tour keep", {tourState})
   };
 
   const handleTourSkip = () => {
@@ -201,6 +204,7 @@ export const TaskSortingGame = () => {
   const handleTourBoxClick = (type: "toolbox" | "trash") => {
     if (!tourState.isActive) return;
 
+    console.log("handle practice keep", {tourState})
     // Regular tour steps
     if (tourState.step === 1 && type === "toolbox") {
       handleTourNext();
@@ -364,6 +368,7 @@ export const TaskSortingGame = () => {
   );
 
   const handleKeep = useCallback(() => {
+    console.log("practice keeping")
     if (tourState.isActive) {
       handleTourBoxClick("toolbox");
       return;
@@ -386,7 +391,8 @@ export const TaskSortingGame = () => {
   }, [currentTaskIndex, gameState.tasks, sortTask, tourState.isActive]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (tourState.isActive || !gameState.tasks[currentTaskIndex]) return;
+
+    if (!gameState.tasks[currentTaskIndex]) return;
     
     const touch = e.touches[0];
     setSwipeState({
@@ -1133,13 +1139,13 @@ export const TaskSortingGame = () => {
   const practiceTasks = [
     {
       id: "practice-1",
-      text: "📧 Respond to Team Email",
+      text: "Respond to Team Email",
       isRelevant: true,
       processed: false,
     },
     {
       id: "practice-2",
-      text: "📱 Check Social Media",
+      text: "Check Social Media",
       isRelevant: false,
       processed: false,
     },
@@ -1207,13 +1213,12 @@ export const TaskSortingGame = () => {
           </div>
           
           {/* Conveyor Belt */}
-          <div className="absolute top-1/2 -translate-y-1/2 w-full h-32 bg-wood border-y-4 border-wood-light conveyor-belt pointer-events-none">
-            <div className="w-full h-full bg-gradient-wood opacity-80 relative overflow-visible">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-                <TaskCard task={currentPracticeTask} />
-              </div>
-            </div>
-          </div>
+         
+          <PracticeConveyor
+              tourState={tourState}
+              setTourState={setTourState}
+              swipeState={swipeState}
+              />
         </>
       ) : (
         <ConveyorBelt
@@ -1225,6 +1230,23 @@ export const TaskSortingGame = () => {
       )}
 
       {/* Game Controls */}
+      {tourState.isActive ?
+      <PracticeControls
+        isMobile={isMobile}
+        onKeep={()=>{
+          setTourState((prev) => ({
+            ...prev,
+            practiceStep:1
+          }));
+          }}
+        onToss={()=>{
+          setTourState((prev) => ({
+            ...prev,
+            practiceStep:2,
+            isActive:false
+          }));
+          }}
+      /> :
       <GameControls
         isMobile={isMobile}
         onKeep={handleKeep}
@@ -1234,7 +1256,7 @@ export const TaskSortingGame = () => {
         showFeedback={showFeedback}
         animatingTask={animatingTask}
         currentTaskId={currentTask?.id}
-      />
+      />}
 
       {/* Animating Task */}
       {animatingTask && (
