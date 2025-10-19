@@ -57,7 +57,7 @@ export const TourOverlay = ({
     {
       title: "You're Ready!",
       description:
-        "Great! Now you know how to play. Swipe tasks quickly to earn points. Good luck! 🎯",
+        "Great! Now you know how to play. You'll start with 4 practice tasks to get the hang of it (they won't affect your score). After that, the real game begins! Swipe quickly to earn points. Good luck! 🎯",
       highlight: null,
       action: "Start Playing!",
       isMobile: true,
@@ -90,7 +90,7 @@ export const TourOverlay = ({
     {
       title: "You're Ready!",
       description:
-        "Great! Now you know how to play. Sort tasks quickly to earn points. Good luck! 🎯",
+        "Great! Now you know how to play. You'll start with 4 practice tasks to get the hang of it (they won't affect your score). After that, the real game begins! Sort quickly to earn points. Good luck! 🎯",
       highlight: null,
       action: "Start Playing!",
       isMobile: false,

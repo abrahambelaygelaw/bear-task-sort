@@ -21,6 +21,7 @@ interface ConveyorBeltProps {
   animatingTask: { taskId: string; target: "toolbox" | "trash" } | null;
   swipeState: SwipeState;
   conveyorRef: React.RefObject<HTMLDivElement>;
+  isPracticeMode?: boolean;
 }
 
 export const ConveyorBelt = ({
@@ -28,6 +29,7 @@ export const ConveyorBelt = ({
   animatingTask,
   swipeState,
   conveyorRef,
+  isPracticeMode = false,
 }: ConveyorBeltProps) => {
   const swipeOffset = swipeState.isDragging 
     ? { 
@@ -45,7 +47,7 @@ export const ConveyorBelt = ({
         {currentTask && !currentTask.processed && !animatingTask && (
           <div
             ref={conveyorRef}
-            className="absolute top-[10%] -translate-y-1/2 animate-conveyor"
+            className={`absolute top-1/2 -translate-y-1/2 ${isPracticeMode ? 'animate-conveyor-infinite' : 'animate-conveyor'}`}
             key={currentTask.id}
             style={{ touchAction: "none" }}
           >

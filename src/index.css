@@ -123,3 +123,21 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Conveyor animations */
+.animate-conveyor {
+  animation: conveyor var(--conveyor-speed, 10s) linear forwards;
+}
+
+.animate-conveyor-infinite {
+  animation: conveyor var(--conveyor-speed, 10s) linear infinite;
+}
+
+@keyframes conveyor {
+  0% {
+    transform: translateX(100vw);
+  }
+  100% {
+    transform: translateX(-100vw);
+  }
+}

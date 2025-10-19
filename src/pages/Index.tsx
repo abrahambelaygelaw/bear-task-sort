@@ -382,7 +382,7 @@ export const TaskSortingGame = () => {
             setTimeout(() => {
               setGameState((prev) => ({ ...prev, phase: "countdown" }));
               setCountdownValue(5);
-            }, 600);
+            }, 100);
           }
 
           return {
@@ -513,14 +513,17 @@ export const TaskSortingGame = () => {
   ]);
 
   useEffect(() => {
-    if (gameState.phase === "playing" && !tourState.isActive && !gameState.isPracticeMode) {
+    if (gameState.phase === "playing" && !tourState.isActive) {
       const initialSpeed = 10;
       const finalSpeed = 4;
       const totalTasks = gameState.totalTasks;
 
       let newSpeed;
     
-      if (totalTasks <= 4) {
+      // During practice mode, use a fixed speed
+      if (gameState.isPracticeMode) {
+        newSpeed = initialSpeed;
+      } else if (totalTasks <= 4) {
         newSpeed = finalSpeed;
       } else {
         const actualTaskIndex = Math.max(0, currentTaskIndex - 4); // Subtract practice tasks
@@ -1229,20 +1232,6 @@ export const TaskSortingGame = () => {
         trashRef={trashRef}
         isMobile={isMobile}
       />
-      
-      {/* Practice Round Banner */}
-      {gameState.isPracticeMode && (
-        <div className="absolute top-24 left-1/2 -translate-x-1/2 z-30 text-center">
-          <div className="bg-honey/90 backdrop-blur-sm px-8 py-4 rounded-2xl shadow-2xl border-4 border-bear-brown animate-pulse">
-            <h2 className="text-4xl md:text-5xl font-black text-bear-brown mb-2">
-              🎮 PRACTICE ROUND 🎮
-            </h2>
-            <p className="text-lg md:text-xl font-bold text-bear-brown/80">
-              Task {gameState.practiceTasksCompleted + 1} of 4
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Header */}
       <GameHeader
@@ -1261,6 +1250,7 @@ export const TaskSortingGame = () => {
         animatingTask={animatingTask}
         swipeState={swipeState}
         conveyorRef={conveyorRef}
+        isPracticeMode={gameState.isPracticeMode}
       />
 
       {/* Game Controls */}
