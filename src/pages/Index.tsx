@@ -54,7 +54,7 @@ interface Task {
 }
 
 interface GameState {
-  phase: "input" | "generating" | "playing" | "results";
+  phase: "input" | "generating" | "playing" | "countdown" | "results";
   goal: string;
   tasks: Task[];
   score: number;
@@ -123,6 +123,7 @@ export const TaskSortingGame = () => {
     isDragging: false,
   });
   const [activeResultsTab, setActiveResultsTab] = useState<ResultsTab>("results");
+  const [countdownValue, setCountdownValue] = useState(5);
   const toolboxRef = useRef<HTMLDivElement>(null);
   const trashRef = useRef<HTMLDivElement>(null);
   const conveyorRef = useRef<HTMLDivElement>(null);
@@ -244,13 +245,13 @@ export const TaskSortingGame = () => {
 
   const handleMissedTask = useCallback(() => {
     if (tourState.isActive || currentTaskIndex >= gameState.tasks.length) return;
+    
+    // Don't advance tasks during practice mode - they must be sorted correctly
+    if (gameState.isPracticeMode) return;
 
     const currentTask = gameState.tasks[currentTaskIndex];
     if (currentTask && !currentTask.processed) {
-      // Don't penalize during practice mode
-      if (!gameState.isPracticeMode) {
-        playWrongSound(isMuted);
-      }
+      playWrongSound(isMuted);
 
       setGameState((prev) => {
         const updatedTasks = prev.tasks.map((task) =>
@@ -376,13 +377,11 @@ export const TaskSortingGame = () => {
           const newPracticeCompleted = prev.isPracticeMode ? prev.practiceTasksCompleted + 1 : prev.practiceTasksCompleted;
           const shouldExitPractice = prev.isPracticeMode && newPracticeCompleted >= 4;
 
-          // Show notification when practice ends
+          // Transition to countdown phase when practice ends
           if (shouldExitPractice) {
             setTimeout(() => {
-              toast.success("🎉 Practice Complete!", {
-                description: "Now let's play the real game! Your score starts counting now.",
-                duration: 4000,
-              });
+              setGameState((prev) => ({ ...prev, phase: "countdown" }));
+              setCountdownValue(5);
             }, 600);
           }
 
@@ -475,6 +474,21 @@ export const TaskSortingGame = () => {
     });
   }, [swipeState, tourState.isActive, handleToss, handleKeep]);
 
+  // Countdown timer effect
+  useEffect(() => {
+    if (gameState.phase === "countdown") {
+      if (countdownValue > 0) {
+        const timer = setTimeout(() => {
+          setCountdownValue((prev) => prev - 1);
+        }, 1000);
+        return () => clearTimeout(timer);
+      } else {
+        // Countdown finished, start the real game
+        setGameState((prev) => ({ ...prev, phase: "playing" }));
+      }
+    }
+  }, [gameState.phase, countdownValue]);
+
   useEffect(() => {
     if (
       gameState.phase === "playing" &&
@@ -499,7 +513,7 @@ export const TaskSortingGame = () => {
   ]);
 
   useEffect(() => {
-    if (gameState.phase === "playing" && !tourState.isActive) {
+    if (gameState.phase === "playing" && !tourState.isActive && !gameState.isPracticeMode) {
       const initialSpeed = 10;
       const finalSpeed = 4;
       const totalTasks = gameState.totalTasks;
@@ -509,10 +523,11 @@ export const TaskSortingGame = () => {
       if (totalTasks <= 4) {
         newSpeed = finalSpeed;
       } else {
-        if (currentTaskIndex >= totalTasks - 4) {
+        const actualTaskIndex = Math.max(0, currentTaskIndex - 4); // Subtract practice tasks
+        if (actualTaskIndex >= totalTasks - 4) {
           newSpeed = finalSpeed;
         } else {
-          const progress = currentTaskIndex / (totalTasks - 4);
+          const progress = actualTaskIndex / (totalTasks - 4);
           newSpeed = initialSpeed - (initialSpeed - finalSpeed) * progress;
         }
       }
@@ -528,6 +543,7 @@ export const TaskSortingGame = () => {
     gameState.phase,
     gameState.totalTasks,
     tourState.isActive,
+    gameState.isPracticeMode,
   ]);
 
   const resetGame = () => {
@@ -1164,6 +1180,28 @@ export const TaskSortingGame = () => {
     );
   }
 
+  if (gameState.phase === "countdown") {
+    return (
+      <div className="min-h-screen bg-gradient-forest flex flex-col items-center justify-center p-8">
+        <div className="text-center max-w-md">
+          <BearMascot score={0} isPlaying={true} isGenerating={false} />
+          <h1 className="text-5xl font-bold text-primary-foreground mb-4 animate-pulse">
+            🎉 Great Practice!
+          </h1>
+          <p className="text-2xl text-primary-foreground/90 mb-8">
+            Real game starts in...
+          </p>
+          <div className="text-9xl font-bold text-honey animate-bounce">
+            {countdownValue}
+          </div>
+          <p className="text-xl text-primary-foreground/80 mt-8">
+            Get ready! Your score starts counting now! 🐻
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (gameState.phase === "results") {
     return (
       <div className="min-h-screen bg-gradient-forest flex items-center justify-center p-4">
@@ -1192,6 +1230,20 @@ export const TaskSortingGame = () => {
         isMobile={isMobile}
       />
       
+      {/* Practice Round Banner */}
+      {gameState.isPracticeMode && (
+        <div className="absolute top-24 left-1/2 -translate-x-1/2 z-30 text-center">
+          <div className="bg-honey/90 backdrop-blur-sm px-8 py-4 rounded-2xl shadow-2xl border-4 border-bear-brown animate-pulse">
+            <h2 className="text-4xl md:text-5xl font-black text-bear-brown mb-2">
+              🎮 PRACTICE ROUND 🎮
+            </h2>
+            <p className="text-lg md:text-xl font-bold text-bear-brown/80">
+              Task {gameState.practiceTasksCompleted + 1} of 4
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <GameHeader
         score={gameState.score}
