@@ -38,7 +38,7 @@ export const ConveyorBelt = ({
 
   return (
     <div
-      className="absolute top-1/2 -translate-y-1/2 w-full h-32 bg-wood border-y-4 border-wood-light conveyor-belt"
+      className="absolute top-1/2 -translate-y-1/2 w-full h-32 md:h-40 lg:h-48 bg-wood border-y-4 border-wood-light conveyor-belt"
       style={{ touchAction: "none" }}
     >
       <div className="w-full h-full bg-gradient-wood opacity-80 relative overflow-hidden">

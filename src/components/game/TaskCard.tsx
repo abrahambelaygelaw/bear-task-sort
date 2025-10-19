@@ -40,10 +40,10 @@ export const TaskCard = ({
 
   return (
     <Card
-      className={`w-64 p-4 bg-card border-2 border-wood 
+      className={`w-72 p-4 bg-card border-2 border-wood 
 					shadow-lg transition-all duration-300
 					bg-gradient-wood ${isAnimating ? "animate-fly-to-" + animationTarget : ""} ${
-        isDragging ? "scale-105 shadow-2xl" : ""
+        isDragging ? "scale-105 shadow-xl" : ""
       }`}
       style={{
         transform: isDragging
@@ -51,7 +51,7 @@ export const TaskCard = ({
           : undefined,
       }}
     >
-      <div className="text-xl font-medium text-foreground mb-3">
+      <div className="xl:text-4xl lg:text-3xl md:text-2xl text-xl font-medium text-foreground mb-3">
         {task.text}
       </div>
       {indicator && (
