@@ -60,6 +60,8 @@ interface GameState {
   score: number;
   correctSorts: number;
   totalTasks: number;
+  isPracticeMode: boolean;
+  practiceTasksCompleted: number;
 }
 
 interface TourState {
@@ -89,6 +91,8 @@ export const TaskSortingGame = () => {
     score: 0,
     correctSorts: 0,
     totalTasks: 0,
+    isPracticeMode: false,
+    practiceTasksCompleted: 0,
   });
   const [playerName, setPlayerName] = useState("");
   const [savingScore, setSavingScore] = useState(false);
@@ -126,6 +130,33 @@ export const TaskSortingGame = () => {
   const taskTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const currentConveyorSpeedRef = useRef(10);
 
+  const practiceTasks: Task[] = [
+    {
+      id: "practice-1",
+      text: "Research marketing strategies",
+      isRelevant: true,
+      processed: false,
+    },
+    {
+      id: "practice-2",
+      text: "Watch cat videos",
+      isRelevant: false,
+      processed: false,
+    },
+    {
+      id: "practice-3",
+      text: "Create project timeline",
+      isRelevant: true,
+      processed: false,
+    },
+    {
+      id: "practice-4",
+      text: "Organize sock drawer",
+      isRelevant: false,
+      processed: false,
+    },
+  ];
+
   const startGame = async () => {
     setGameState((prev) => ({
       ...prev,
@@ -141,17 +172,28 @@ export const TaskSortingGame = () => {
         responseTime: undefined
       }));
       
-      if (tasksWithTiming.length > 0) {
-        tasksWithTiming[0].startTime = Date.now();
+      // Add practice tasks at the beginning
+      const practiceTasksWithTiming = practiceTasks.map((task) => ({
+        ...task,
+        startTime: undefined,
+        responseTime: undefined
+      }));
+      
+      const allTasks = [...practiceTasksWithTiming, ...tasksWithTiming];
+      
+      if (allTasks.length > 0) {
+        allTasks[0].startTime = Date.now();
       }
       
       setGameState({
         phase: "playing",
         goal: goalInput,
-        tasks: tasksWithTiming,
+        tasks: allTasks,
         score: 0,
         correctSorts: 0,
-        totalTasks: tasksWithTiming.length,
+        totalTasks: tasksWithTiming.length, // Only count real tasks
+        isPracticeMode: true,
+        practiceTasksCompleted: 0,
       });
       playBackgroundMusic(isMuted);
 
@@ -205,7 +247,10 @@ export const TaskSortingGame = () => {
 
     const currentTask = gameState.tasks[currentTaskIndex];
     if (currentTask && !currentTask.processed) {
-      playWrongSound(isMuted);
+      // Don't penalize during practice mode
+      if (!gameState.isPracticeMode) {
+        playWrongSound(isMuted);
+      }
 
       setGameState((prev) => {
         const updatedTasks = prev.tasks.map((task) =>
@@ -227,7 +272,7 @@ export const TaskSortingGame = () => {
 
       setCurrentTaskIndex((prev) => prev + 1);
     }
-  }, [currentTaskIndex, gameState.tasks, isMuted, tourState.isActive]);
+  }, [currentTaskIndex, gameState.tasks, isMuted, tourState.isActive, gameState.isPracticeMode]);
 
   useEffect(() => {
     if (
@@ -259,6 +304,16 @@ export const TaskSortingGame = () => {
         handleTourBoxClick(choice === "keep" ? "toolbox" : "trash");
         return;
       }
+      
+      // During practice mode, only allow correct answers
+      if (gameState.isPracticeMode && !isCorrect) {
+        playWrongSound(isMuted);
+        toast.error("Not quite! Try again.", {
+          description: "Sort the task to the correct box to continue."
+        });
+        return;
+      }
+      
       const taskElement = document.querySelector(".animate-conveyor");
       if (taskElement) {
         const rect = taskElement.getBoundingClientRect();
@@ -284,8 +339,9 @@ export const TaskSortingGame = () => {
       const maxTime = currentConveyorSpeedRef.current * 1000;
       const timeRatio = Math.max(0, Math.min(1, 1 - responseTime / maxTime));
         
-      const basePoints = isCorrect ? 100 : 0;
-      const speedBonus = isCorrect ? Math.floor(timeRatio * 50) : 0;
+      // Don't award points during practice mode
+      const basePoints = gameState.isPracticeMode ? 0 : (isCorrect ? 100 : 0);
+      const speedBonus = gameState.isPracticeMode ? 0 : (isCorrect ? Math.floor(timeRatio * 50) : 0);
       const taskPoints = basePoints + speedBonus;
 
       if (isCorrect) {
@@ -313,15 +369,30 @@ export const TaskSortingGame = () => {
           }
 
           const newScore = prev.score + taskPoints;
-          const newCorrectSorts = isCorrect
+          const newCorrectSorts = prev.isPracticeMode ? prev.correctSorts : (isCorrect
             ? prev.correctSorts + 1
-            : prev.correctSorts;
+            : prev.correctSorts);
+          
+          const newPracticeCompleted = prev.isPracticeMode ? prev.practiceTasksCompleted + 1 : prev.practiceTasksCompleted;
+          const shouldExitPractice = prev.isPracticeMode && newPracticeCompleted >= 4;
+
+          // Show notification when practice ends
+          if (shouldExitPractice) {
+            setTimeout(() => {
+              toast.success("🎉 Practice Complete!", {
+                description: "Now let's play the real game! Your score starts counting now.",
+                duration: 4000,
+              });
+            }, 600);
+          }
 
           return {
             ...prev,
             tasks: updatedTasks,
             score: newScore,
             correctSorts: newCorrectSorts,
+            isPracticeMode: !shouldExitPractice && prev.isPracticeMode,
+            practiceTasksCompleted: newPracticeCompleted,
           };
         });
 
@@ -330,7 +401,7 @@ export const TaskSortingGame = () => {
         setCurrentTaskIndex((prev) => prev + 1);
       }, 500);
     },
-    [isMuted, tourState.isActive,gameState.tasks]
+    [isMuted, tourState.isActive, gameState.tasks, gameState.isPracticeMode, currentTaskIndex]
   );
 
   const handleKeep = useCallback(() => {
@@ -467,6 +538,8 @@ export const TaskSortingGame = () => {
       score: 0,
       correctSorts: 0,
       totalTasks: 0,
+      isPracticeMode: false,
+      practiceTasksCompleted: 0,
     });
     setGoalInput("");
     setPlayerName("");
@@ -1122,9 +1195,9 @@ export const TaskSortingGame = () => {
       {/* Header */}
       <GameHeader
         score={gameState.score}
-        goal={gameState.goal}
-        currentTaskIndex={currentTaskIndex}
-        totalTasks={gameState.totalTasks}
+        goal={gameState.isPracticeMode ? "Practice Round" : gameState.goal}
+        currentTaskIndex={gameState.isPracticeMode ? gameState.practiceTasksCompleted : Math.max(0, currentTaskIndex - 4)}
+        totalTasks={gameState.isPracticeMode ? 4 : gameState.totalTasks}
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
         isMobile={isMobile}
