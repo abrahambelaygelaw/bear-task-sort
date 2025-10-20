@@ -47,7 +47,7 @@ export const ConveyorBelt = ({
         {currentTask && !currentTask.processed && !animatingTask && (
           <div
             ref={conveyorRef}
-            className={`absolute top-1/2 -translate-y-1/2 ${isPracticeMode ? 'animate-conveyor-infinite' : 'animate-conveyor'}`}
+            className={`absolute top-1/5 -translate-y-1/2 ${isPracticeMode ? 'animate-conveyor-infinite' : 'animate-conveyor'}`}
             key={currentTask.id}
             style={{ touchAction: "none" }}
           >

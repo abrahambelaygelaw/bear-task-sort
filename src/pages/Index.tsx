@@ -1188,8 +1188,8 @@ export const TaskSortingGame = () => {
       <div className="min-h-screen bg-gradient-forest flex flex-col items-center justify-center p-8">
         <div className="text-center max-w-md">
           <BearMascot score={0} isPlaying={true} isGenerating={false} />
-          <h1 className="text-5xl font-bold text-primary-foreground mb-4 animate-pulse">
-            🎉 Great Practice!
+          <h1 className="text-3xl font-bold text-primary-foreground mb-4 animate-pulse">
+            Great Practice!
           </h1>
           <p className="text-2xl text-primary-foreground/90 mb-8">
             Real game starts in...
