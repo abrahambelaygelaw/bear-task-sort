@@ -346,10 +346,13 @@ export const TaskSortingGame = () => {
       const speedBonus = gameState.isPracticeMode ? 0 : (isCorrect ? Math.floor(timeRatio * 50) : 0);
       const taskPoints = basePoints + speedBonus;
 
-      if (isCorrect) {
-        playCorrectSound(isMuted);
-      } else {
-        playWrongSound(isMuted);
+      // Play sounds only if not in practice mode
+      if (!gameState.isPracticeMode) {
+        if (isCorrect) {
+          playCorrectSound(isMuted);
+        } else {
+          playWrongSound(isMuted);
+        }
       }
 
       setShowFeedback({ isCorrect, taskId });
@@ -948,14 +951,6 @@ export const TaskSortingGame = () => {
                                 ? "Missed"
                                 : `${task.userChoice === "keep" ? "Kept" : "Tossed"}`}
                             </span>
-                            {task.responseTime && (
-                              <>
-                                <span className="text-muted-foreground mx-1">•</span>
-                                <span className="text-muted-foreground">
-                                  {(task.responseTime/1000).toFixed(2)}{" s"}
-                                </span>
-                              </>
-                            )}
                           </div>
                         </div>
                         {isMissed ? (
@@ -1090,14 +1085,6 @@ export const TaskSortingGame = () => {
                                 ? "Missed"
                                 : `${task.userChoice === "keep" ? "Kept" : "Tossed"}`}
                             </span>
-                            {task.responseTime && (
-                              <>
-                                <span className="text-muted-foreground mx-1">•</span>
-                                <span className="text-muted-foreground">
-                                  {(task.responseTime/1000).toFixed(2)}{" s"}
-                                </span>
-                              </>
-                            )}
                           </div>
                         </div>
                         {isMissed ? (
