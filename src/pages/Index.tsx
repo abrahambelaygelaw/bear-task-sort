@@ -827,6 +827,20 @@ export const TaskSortingGame = () => {
   }, [gameState.phase]);
 
   // Render Results Component (extracted for better organization)
+  useEffect(() => {
+    if (gameState.phase !== "results") return;
+
+    setGameState((prev) => {
+      const hasPractice = prev.tasks.some((t) => t.id.startsWith("practice-"));
+      if (!hasPractice) return prev;
+
+      return {
+        ...prev,
+        tasks: prev.tasks.filter((t) => !t.id.startsWith("practice-")),
+      };
+    });
+  }, [gameState.phase]);
+  
   const renderResultsContent = () => {
     const accuracy = (gameState.correctSorts / gameState.totalTasks) * 100;
 
