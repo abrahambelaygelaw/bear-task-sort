@@ -315,7 +315,7 @@ export const TaskSortingGame = () => {
         return;
       }
       
-      const taskElement = document.querySelector(".animate-conveyor");
+      const taskElement = document.querySelector(".animate-conveyor, .animate-conveyor-infinite");
       if (taskElement) {
         const rect = taskElement.getBoundingClientRect();
         const startX = rect.left + rect.width / 2 - window.innerWidth / 2;
