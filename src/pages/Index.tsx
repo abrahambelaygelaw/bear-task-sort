@@ -1240,7 +1240,7 @@ export const TaskSortingGame = () => {
       <GameHeader
         score={gameState.score}
         goal={gameState.isPracticeMode ? "Practice Round" : gameState.goal}
-        currentTaskIndex={gameState.isPracticeMode ? gameState.practiceTasksCompleted :  currentTaskIndex }
+        currentTaskIndex={gameState.isPracticeMode ? gameState.practiceTasksCompleted : Math.max(0, currentTaskIndex - 4)}
         totalTasks={gameState.isPracticeMode ? 4 : gameState.totalTasks}
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
