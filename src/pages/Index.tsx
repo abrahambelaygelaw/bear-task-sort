@@ -104,6 +104,7 @@ export const TaskSortingGame = () => {
     totalSteps: 4,
     hasStarted: false,
   });
+  const [isFirstGame, setIsFirstGame] = useState(true);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [goalInput, setGoalInput] = useState("");
   const [animatingTask, setAnimatingTask] = useState<{
@@ -173,12 +174,12 @@ export const TaskSortingGame = () => {
         responseTime: undefined
       }));
       
-      // Add practice tasks at the beginning
-      const practiceTasksWithTiming = practiceTasks.map((task) => ({
+      // Add practice tasks at the beginning only for first game
+      const practiceTasksWithTiming = isFirstGame ? practiceTasks.map((task) => ({
         ...task,
         startTime: undefined,
         responseTime: undefined
-      }));
+      })) : [];
       
       const allTasks = [...practiceTasksWithTiming, ...tasksWithTiming];
       
@@ -193,7 +194,7 @@ export const TaskSortingGame = () => {
         score: 0,
         correctSorts: 0,
         totalTasks: tasksWithTiming.length, // Only count real tasks
-        isPracticeMode: true,
+        isPracticeMode: isFirstGame,
         practiceTasksCompleted: 0,
       });
       playBackgroundMusic(isMuted);
@@ -379,6 +380,7 @@ export const TaskSortingGame = () => {
 
           // Transition to countdown phase when practice ends
           if (shouldExitPractice) {
+            setIsFirstGame(false);
             setTimeout(() => {
               setGameState((prev) => ({ ...prev, phase: "countdown" }));
               setCountdownValue(5);
