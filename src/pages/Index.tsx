@@ -984,7 +984,7 @@ export const TaskSortingGame = () => {
                 onClick={resetGame}
                 className="w-full mt-6 bg-gradient-honey text-bear-brown font-bold hover:scale-105 transition-transform"
               >
-                🐻 Play Again
+                 Play Again
               </Button>
             </div>
           ) : (
@@ -1118,7 +1118,7 @@ export const TaskSortingGame = () => {
                 onClick={resetGame}
                 className="w-full mt-6 bg-gradient-honey text-bear-brown font-bold hover:scale-105 transition-transform"
               >
-                🐻 Play Again
+                 Play Again
               </Button>
             </div>
           </div>
@@ -1201,7 +1201,7 @@ export const TaskSortingGame = () => {
             {countdownValue}
           </div>
           <p className="text-xl text-primary-foreground/80 mt-8">
-            Get ready! Your score starts counting now! 🐻
+            Get ready! Your score starts counting now! 
           </p>
         </div>
       </div>
@@ -1240,7 +1240,7 @@ export const TaskSortingGame = () => {
       <GameHeader
         score={gameState.score}
         goal={gameState.isPracticeMode ? "Practice Round" : gameState.goal}
-        currentTaskIndex={gameState.isPracticeMode ? gameState.practiceTasksCompleted : Math.max(0, currentTaskIndex - 4)}
+        currentTaskIndex={gameState.isPracticeMode ? gameState.practiceTasksCompleted :  currentTaskIndex }
         totalTasks={gameState.isPracticeMode ? 4 : gameState.totalTasks}
         isMuted={isMuted}
         onToggleMute={handleToggleMute}

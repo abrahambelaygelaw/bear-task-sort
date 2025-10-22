@@ -31,7 +31,7 @@ export const TourOverlay = ({
 
   const tourSteps = isMobile ? [
     {
-      title: "Welcome to Bear's Task Factory! 🐻",
+      title: "Welcome to Bear's Task Factory!",
       description:
         "Let me show you how to play on mobile! Tasks will move across the screen and you can swipe them.",
       highlight: null,
@@ -64,7 +64,7 @@ export const TourOverlay = ({
     },
   ] : [
     {
-      title: "Welcome to Bear's Task Factory! 🐻",
+      title: "Welcome to Bear's Task Factory!",
       description:
         "Let me show you how to play! Tasks will move across the screen like this one below.",
       highlight: null,
