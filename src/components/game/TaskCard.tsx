@@ -40,7 +40,7 @@ export const TaskCard = ({
 
   return (
     <Card
-      className={`w-72 p-4 bg-card border-2 border-wood 
+      className={`w-72 px-4 py-2 bg-card border-2 border-wood 
 					shadow-lg transition-all duration-300
 					bg-gradient-wood ${isAnimating ? "animate-fly-to-" + animationTarget : ""} ${
         isDragging ? "scale-105 shadow-xl" : ""

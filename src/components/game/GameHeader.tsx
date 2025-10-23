@@ -58,7 +58,7 @@ export const GameHeader = ({
       {/* Progress */}
       <div className="absolute top-16 right-4 z-10">
         <Badge variant="secondary" className="bg-card text-foreground">
-          {currentTaskIndex + 1} / {totalTasks}
+          {Math.min(currentTaskIndex + 1,20)} / {totalTasks}
         </Badge>
       </div>
     </>
